@@ -11,7 +11,7 @@ if [ ! -d "$DERBY_DIR" ]; then
     echo -e "[INFO] Derby not installed yet! Downloading...\n"
     cd $DERBY_ROOT 
     wget apache.sunsite.ualberta.ca//db/derby/db-derby-10.12.1.1/db-derby-10.12.1.1-bin.tar.gz
-    tar -zxf db-derby-$DERBY_VERSION-bin.tar.g
+    tar -zxf db-derby-$DERBY_VERSION-bin.tar.gz
     rm db-derby-$DERBY_VERSION-bin.tar.gz
 fi
 

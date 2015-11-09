@@ -68,7 +68,7 @@ public class Database {
 
     /**
      * Close the connection to the embedded Derby server and shutdown the server.
-     * 
+     *
      * @throws DatabaseException
      */
     public static void shutdown() throws DatabaseException {
