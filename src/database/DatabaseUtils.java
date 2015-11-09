@@ -8,11 +8,7 @@ public class DatabaseUtils {
 		
 		try {
 			ResultSet results = connection.getMetaData().getTables(null, null, sql, new String[] {"TABLE"});
-			if (!results.isBeforeFirst()) {
-				return false;
-			} else {
-				return true;
-			}
+			return results.next();
 		} catch (SQLException e) {
 			if (e.getSQLState().equals("42X05")) {
 				// If the error is the table does not exist return false
