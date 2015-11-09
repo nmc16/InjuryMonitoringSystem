@@ -59,7 +59,13 @@ public class Database {
      * @throws DatabaseException
      */
     public static void init() throws DatabaseException {
-        // TODO Create tables in the database
+    	Statement statement;
+    	try {
+    		statement = connection.createStatement();
+    	} catch (SQLException e) {
+    		LOG.severe("Could not create statement: " + e.getLocalizedMessage());
+    		throw new DatabaseException("Could not create statement: " + e.getLocalizedMessage(), e);
+    	}
     }
 
     public static void store(Sendable sendable) throws DatabaseException {
