@@ -8,7 +8,6 @@ package test;
 
 import controller.Controller;
 import data.Position;
-import data.SensorDBData;
 import data.SensorData;
 import exception.ThresholdException;
 import org.junit.*;
@@ -36,7 +35,7 @@ public class ControllerTest {
                                     pow(sensorData2.getPosition().getyPos() - sensorData.getPosition().getyPos(), 2) +
                                     pow(sensorData2.getPosition().getzPos() - sensorData.getPosition().getzPos(), 2));
 
-        SensorDBData sd = null;
+        SensorData sd = null;
         try {
             sd = controller.calculate(sensorData, sensorData2);
         } catch (ThresholdException e) {
@@ -53,7 +52,7 @@ public class ControllerTest {
         sensorData = new SensorData(new Position(10, 10, 10));
         sensorData2 = new SensorData(new Position(50, 50, 50));
 
-        SensorDBData sd = null;
+        SensorData sd = null;
         try {
             sd = controller.calculate(sensorData, sensorData2);
         } catch (ThresholdException e) {

@@ -5,7 +5,7 @@ package controller;
  *
  * @version 1
  */
-import data.SensorDBData;
+import data.Acceleration;
 import data.SensorData;
 import exception.ThresholdException;
 
@@ -20,7 +20,7 @@ public class Controller {
         this.threshold = threshold;
     }
 
-    public SensorDBData calculate(SensorData s1, SensorData s2) throws ThresholdException {
+    public SensorData calculate(SensorData s1, SensorData s2) throws ThresholdException {
         // Calculate the acceleration data
         int deltaX = s2.getPosition().getxPos() - s1.getPosition().getxPos();
         int deltaY = s2.getPosition().getyPos() - s1.getPosition().getyPos();
@@ -33,6 +33,6 @@ public class Controller {
         }
 
         // Create new DB Data object with new acceleration data and return
-        return new SensorDBData(s1.getPosition(), accel);
+        return new SensorData(s1.getPosition(), new Acceleration(0, 0, 0, accel));
     }
 }

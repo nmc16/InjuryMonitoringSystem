@@ -3,7 +3,6 @@ package database;
 /**
  * Class that will manage database driver and connection.
  *
- * @author N McCallum
  * @version 1
  */
 
@@ -28,7 +27,7 @@ public class Database {
         tables = new HashMap<String, String>();
         tables.put("ALARMS", "CREATE TABLE ALARMS " +
                              "(PLAYERID INT NOT NULL PRIMARY KEY," +
-                             " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                             " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
                              " LEVEL INT NOT NULL)");
     }
 
