@@ -67,7 +67,7 @@ public class SensorData implements Sendable {
 
     @Override
     @Id
-    @Column(name = "PLAYER_ID", unique = true, nullable = false)
+    @Column(name = "PLAYERID", unique = true, nullable = false)
     public int getUID() {
         return uid;
     }

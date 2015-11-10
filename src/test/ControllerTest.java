@@ -44,7 +44,7 @@ public class ControllerTest {
         }
 
         assertNotNull("Sensor Database Data was never initialized!", sd);
-        assertEquals("Acceleration data calculation was not equal!", expected, sd.getAccel(), 0.01);
+        assertEquals("Acceleration data calculation was not equal!", expected, sd.getAcceleration().getAccelMag(), 0);
     }
 
     @Test

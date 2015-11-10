@@ -29,6 +29,16 @@ public class Database {
                              "(PLAYERID INT NOT NULL PRIMARY KEY," +
                              " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
                              " LEVEL INT NOT NULL)");
+        tables.put("SENSORDATA", "CREATE TABLE SENSORDATA " +
+                                 "(PLAYERID INT NOT NULL PRIMARY KEY," +
+                                 " TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
+                                 " X_POS INT NOT NULL," +
+                                 " Y_POS INT NOT NULL," +
+                                 " Z_POS INT NOT NULL," +
+                                 " X_ACCEL INT NOT NULL," +
+                                 " Y_ACCEL INT NOT NULL," +
+                                 " Z_ACCEL INT NOT NULL," +
+                                 " ACCEL INT NOT NULL)");
     }
 
     /**
