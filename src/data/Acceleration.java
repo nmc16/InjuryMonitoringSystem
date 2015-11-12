@@ -2,6 +2,8 @@ package data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * Class that holds the acceleration data calculated by the controller
@@ -10,11 +12,16 @@ import javax.persistence.Entity;
  * @version 1
  */
 @Entity
+@Table(name = "ACCELERATION")
 public class Acceleration {
     private int xAccel;
     private int yAccel;
     private int zAccel;
     private int accelMag;
+
+    public Acceleration() {
+        this(0, 0, 0, 0);
+    }
 
     public Acceleration(int xAccel, int yAccel, int zAccel, double accelMag) {
         this(xAccel, yAccel, zAccel, (int) accelMag);
@@ -27,6 +34,7 @@ public class Acceleration {
         this.accelMag = accelMag;
     }
 
+    @Id
     @Column(name = "X_ACCEL")
     public int getxAccel() {
         return xAccel;

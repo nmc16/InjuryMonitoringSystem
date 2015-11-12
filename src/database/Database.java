@@ -6,11 +6,16 @@ package database;
  * @version 1
  */
 
+import data.Acceleration;
+import data.Position;
 import data.Sendable;
+import data.SensorData;
 import exception.DatabaseException;
 
+import javax.persistence.*;
 import java.sql.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -20,6 +25,7 @@ public class Database {
     private static final String connectionURL = "jdbc:derby:" + dbName + ";create=true";
     private static final String shutdownURL = "jdbc:derby:;shutdown=true";
     private static final Logger LOG = Logger.getLogger("DBLogger");
+    private EntityManagerFactory factory;
     private Connection connection = null;
     private Map<String, String> tables;
 
@@ -39,6 +45,11 @@ public class Database {
                                  " Y_ACCEL INT NOT NULL," +
                                  " Z_ACCEL INT NOT NULL," +
                                  " ACCEL INT NOT NULL)");
+        tables.put("ACCELERATION", "CREATE TABLE ACCELERATION " +
+                                   "(X_ACCEL INT NOT NULL PRIMARY KEY," +
+                                   " Y_ACCEL INT NOT NULL," +
+                                   " Z_ACCEL INT NOT NULL," +
+                                   " ACCEL INT NOT NULL)");
     }
 
     /**
@@ -107,8 +118,27 @@ public class Database {
         }
     }
 
-    public static void store(Sendable sendable) throws DatabaseException {
-        // Store into table in database
+    public void store() throws DatabaseException {
+        LOG.info("Adding test data...");
+        factory = Persistence.createEntityManagerFactory("test");
+        EntityManager entityManager = factory.createEntityManager();
+        Acceleration acceleration = new Acceleration(10, 9, 8, 7);
+        EntityTransaction tx = entityManager.getTransaction();
+        tx.begin();
+        entityManager.persist(acceleration);
+        tx.commit();
+        entityManager.close();
+        LOG.info("Finished adding test data.");
+    }
+
+    public void retrieve() throws DatabaseException {
+        factory = Persistence.createEntityManagerFactory("test");
+        EntityManager entityManager = factory.createEntityManager();
+        Query q = entityManager.createQuery("select a from Acceleration a");
+        List<Acceleration> todoList = q.getResultList();
+        for (Acceleration todo : todoList) {
+            System.out.println(todo.getxAccel() + ", " + todo.getyAccel() + ", " + todo.getzAccel() + ", " + todo.getAccelMag());
+        }
     }
 
     /**
@@ -152,6 +182,8 @@ public class Database {
         try {
             db.connect();
             db.init();
+            //db.store();
+            db.retrieve();
             db.shutdown();
         } catch (DatabaseException e) {
             LOG.severe(e.getLocalizedMessage());
