@@ -1,42 +1,31 @@
 import java.awt.BorderLayout;
 import java.awt.Container;
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
-
-//import javax.swing.JButton;
 import javax.swing.JFrame;
-//import javax.swing.JTextArea;
-
-
-
 
 public class MainFrame extends JFrame {
 	
-	
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private detailPanel dets;
+	private playerInfoPane textp;
 	public MainFrame(String title){
 		super(title);
-		
+				
 		// set layout manager 
 		setLayout(new BorderLayout());
 		
-		// create swing componant 
-		//final JTextArea textArea = new JTextArea();
-	//	JButton button = new JButton("Click here!");
-		
+		// create swing s 
+		textp = new playerInfoPane();
+		// here i create a detail panel
+		//textp.addToPane("charlie made it");
 		dets = new detailPanel();
 		
 		dets.addDetailsListener(new DetailListener(){
 			
 			public void detailEventOccurred(DetailEvent event){
-				
+				System.out.println("An event has occered");
 				String text = event.getText();
-				System.out.println(text);
+				
+				textp.addToPane(text);
 			}
 			
 			
@@ -45,22 +34,13 @@ public class MainFrame extends JFrame {
 		
 		
 		
-		// add swing componants to content pane
+		// add swing components to content pane
 		Container c = getContentPane();
-		//c.add(textArea,BorderLayout.CENTER);
-		//c.add(button,BorderLayout.NORTH); 
+		
 		c.add(dets,BorderLayout.WEST);
-		//add button behavior 
-		//button.addActionListener(new ActionListener(){
-
-			//@Override
-			//public void actionPerformed(ActionEvent arg0) {
-			//	textArea.append("Charlieisawesome\n");
-			//}
-			
-			
-			
-	///	});
+		c.add(textp,BorderLayout.EAST);
+		
+		
 	
 		
 	}
