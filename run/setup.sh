@@ -5,6 +5,7 @@ BASEDIR=`pwd`
 # Versions
 DERBY_VERSION=10.12.1.1
 JUNIT_VERSION=4.12
+HAMCREST_VERSION=1.3
 ECLIPSELINK_VERSION=2.6.1
 JPA_VERSION=2.1.0
 
@@ -49,23 +50,21 @@ if [ ! -f "$HAMCREST_JAR" ]; then
 fi
 
 # Download JPA jar if it does not already exist in the dependencies
-if [ ! -f "$ECLIPSELINK_JAR" ]; then
-    echo "[INFO] EclipseLink not downloaded yet! Downloading..."
+if [ ! -f "$ECLIPSELINK_JAR" ] || [ ! -f "$JPA_JAR" ]; then
+    echo "[INFO] EclipseLink/JPA not downloaded yet! Downloading..."
     cd ${ROOT}
     wget http://ftp.osuosl.org/pub/eclipse/rt/eclipselink/releases/2.6.1/eclipselink-2.6.1.v20150916-55dc7c3.zip
     unzip eclipselink-2.6.1.v20150916-55dc7c3.zip
     rm eclipselink-2.6.1.v20150916-55dc7c3.zip
-    cp eclipselink/jlib/eclipselink.jar ./eclipselink-${ECLIPSELINK_VERSION}.jar
-    rm -r eclipselink
-fi
 
-if [ ! -f "$JPA_JAR" ]; then
-    echo "[INFO] JPA not downloaded yet! Downloading..."
-    cd ${ROOT}
-    wget http://ftp.osuosl.org/pub/eclipse/rt/eclipselink/releases/2.6.1/eclipselink-2.6.1.v20150916-55dc7c3.zip
-    unzip eclipselink-2.6.1.v20150916-55dc7c3.zip
-    rm eclipselink-2.6.1.v20150916-55dc7c3.zip
-    cp eclipselink/jlib/jpa/javax.persistence_${JPA_VERSION}*.jar ./javax.persistence_${JPA_VERSION}.jar
+    if [ ! -f "$ECLIPSELINK_JAR" ]; then
+        cp eclipselink/jlib/eclipselink.jar ./eclipselink-${ECLIPSELINK_VERSION}.jar
+    fi
+
+    if [ ! -f "$JPA_JAR" ]; then
+        cp eclipselink/jlib/jpa/javax.persistence_${JPA_VERSION}*.jar ./javax.persistence_${JPA_VERSION}.jar
+    fi
+
     rm -r eclipselink
 fi
 
@@ -86,11 +85,3 @@ if [[ "$version" < "1.5" ]]; then
     echo "[ERROR] Java version not high enough! Requires at least 1.5!"
     exit 1
 fi
-
-# Add derby to the path if not already there
-echo "[INFO] Setting path..."
-export PATH="$PATH:$DERBY_HOME/bin"
-
-# Setup the classpath using the tool from derby
-echo "[INFO] Setting up classpath..."
-. setEmbeddedCP
