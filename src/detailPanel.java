@@ -10,6 +10,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 
 
@@ -66,7 +67,7 @@ public class detailPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				 String playerName =(String)playerDrop.getSelectedItem();
 				//Object PlayerName = playerDrop.getSelectedItem();
-				 fireDetailEvent(new DetailEvent(this,"charlie"));
+				 fireDetailEvent(new DetailEvent(this,playerName));
 				// fireDetialEvent2(e,playerName);
 				
 			//	System.out.println("THERE IS AN EMERGENCY");
@@ -104,25 +105,29 @@ public class detailPanel extends JPanel {
 	
 	public void fireDetailEvent(DetailEvent event){
 		System.out.println("made it here");
-		Object[] listeners = listenerList.getListenerList();
 		
-		for(int i =0; i < listeners.length; i +=2){
-			if(listeners[i]==DetailListener.class ){
+		
+		// here is where the issue is the object array is not being correctly created
+		
+		Object[] listen = listenerList.getListenerList(); 
+		
+		
+		for(int i =0; i < listen.length; i +=2){
+			if(listen[i]==DetailListener.class){
 				System.out.println("made it here2");
-				((DetailListener) listeners[i+1]).detailEventOccurred(event);
+				((DetailListener) listen[i+1]).detailEventOccurred(event);
 				
 			}
-		
 		}
-		
 	}
 	
 		
 
 	public void addDetailsListener(DetailListener listener){
+		System.out.println(ListenerList);
 		ListenerList.add(DetailListener.class, listener);
 		
-		System.out.println("ListenerAdded");
+		System.out.println(ListenerList);
 		
 	}
 	public void removeDetailsListener(DetailListener listener){

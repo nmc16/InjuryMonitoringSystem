@@ -14,7 +14,7 @@ public class playerInfoPane extends JPanel {
 		Dimension size = getPreferredSize();
 		size.width=250;
 		setPreferredSize(size);
-		setBorder(BorderFactory.createTitledBorder("Player Information"));
+		setBorder(BorderFactory.createTitledBorder("Player Information "));
 		
 		textArea = new JTextArea("Player Info",250,100);
 		textArea.setLineWrap(true);
@@ -28,7 +28,7 @@ public class playerInfoPane extends JPanel {
 	
 	public void addToPane(String add){
 		
-		textArea.append(add);
+		textArea.append( add);
 		
 		
 	}

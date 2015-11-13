@@ -15,6 +15,9 @@ public class MainFrame extends JFrame {
 		
 		// create swing s 
 		textp = new playerInfoPane();
+		textp.addToPane("text");
+
+		
 		// here i create a detail panel
 		//textp.addToPane("charlie made it");
 		dets = new detailPanel();
