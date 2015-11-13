@@ -4,6 +4,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import java.util.Date;
 
 /**
  * Class that holds the acceleration data calculated by the controller
@@ -12,29 +16,32 @@ import javax.persistence.Table;
  * @version 1
  */
 @Entity
-@Table(name = "ACCELERATION")
-public class Acceleration {
+@Table(name = "ACCELDATA")
+public class Acceleration implements Sendable {
+    private int uid;
+    private Date time;
     private int xAccel;
     private int yAccel;
     private int zAccel;
     private int accelMag;
 
     public Acceleration() {
-        this(0, 0, 0, 0);
+        this(0, new Date(), 0, 0, 0, 0);
     }
 
-    public Acceleration(int xAccel, int yAccel, int zAccel, double accelMag) {
-        this(xAccel, yAccel, zAccel, (int) accelMag);
+    public Acceleration(int uid, Date time, int xAccel, int yAccel, int zAccel, double accelMag) {
+        this(uid, time, xAccel, yAccel, zAccel, (int) accelMag);
     }
 
-    public Acceleration(int xAccel, int yAccel, int zAccel, int accelMag) {
+    public Acceleration(int uid, Date time, int xAccel, int yAccel, int zAccel, int accelMag) {
+        this.uid = uid;
+        this.time = time;
         this.xAccel = xAccel;
         this.yAccel = yAccel;
         this.zAccel = zAccel;
         this.accelMag = accelMag;
     }
 
-    @Id
     @Column(name = "X_ACCEL")
     public int getxAccel() {
         return xAccel;
@@ -69,5 +76,29 @@ public class Acceleration {
 
     public void setAccelMag(int accelMag) {
         this.accelMag = accelMag;
+    }
+
+    @Override
+    public void setUID(int uid) {
+        this.uid = uid;
+    }
+
+    @Override
+    public void setTime(Date time) {
+        this.time = time;
+    }
+
+    @Override
+    @Id
+    @Column(name = "PLAYERID")
+    public int getUID() {
+        return uid;
+    }
+
+    @Override
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "TIME")
+    public Date getTime() {
+        return time;
     }
 }

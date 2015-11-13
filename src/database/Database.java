@@ -7,16 +7,13 @@ package database;
  */
 
 import data.Acceleration;
-import data.Position;
 import data.Sendable;
-import data.SensorData;
 import exception.DatabaseException;
 
 import javax.persistence.*;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Date;
 import java.util.logging.Logger;
 
 public class Database {
@@ -25,31 +22,24 @@ public class Database {
     private static final String connectionURL = "jdbc:derby:" + dbName + ";create=true";
     private static final String shutdownURL = "jdbc:derby:;shutdown=true";
     private static final Logger LOG = Logger.getLogger("DBLogger");
-    private EntityManagerFactory factory;
     private Connection connection = null;
     private Map<String, String> tables;
+    private EntityManagerFactory factory;
 
     public Database() {
         tables = new HashMap<String, String>();
-        tables.put("ALARMS", "CREATE TABLE ALARMS " +
-                             "(PLAYERID INT NOT NULL PRIMARY KEY," +
-                             " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-                             " LEVEL INT NOT NULL)");
-        tables.put("SENSORDATA", "CREATE TABLE SENSORDATA " +
-                                 "(PLAYERID INT NOT NULL PRIMARY KEY," +
-                                 " TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-                                 " X_POS INT NOT NULL," +
-                                 " Y_POS INT NOT NULL," +
-                                 " Z_POS INT NOT NULL," +
-                                 " X_ACCEL INT NOT NULL," +
-                                 " Y_ACCEL INT NOT NULL," +
-                                 " Z_ACCEL INT NOT NULL," +
-                                 " ACCEL INT NOT NULL)");
-        tables.put("ACCELERATION", "CREATE TABLE ACCELERATION " +
-                                   "(X_ACCEL INT NOT NULL PRIMARY KEY," +
-                                   " Y_ACCEL INT NOT NULL," +
-                                   " Z_ACCEL INT NOT NULL," +
-                                   " ACCEL INT NOT NULL)");
+        tables.put("ALARMDATA", "CREATE TABLE ALARMDATA " +
+                                "(PLAYERID INT NOT NULL PRIMARY KEY," +
+                                " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
+                                " LEVEL INT NOT NULL)");
+        tables.put("ACCELDATA", "CREATE TABLE ACCELDATA " +
+                                "(PLAYERID INT NOT NULL PRIMARY KEY," +
+                                " TIME TIMESTAMP NOT NULL," +
+                                " X_ACCEL INT NOT NULL," +
+                                " Y_ACCEL INT NOT NULL," +
+                                " Z_ACCEL INT NOT NULL," +
+                                " ACCEL INT NOT NULL)");
+        factory = Persistence.createEntityManagerFactory("sdb");
     }
 
     /**
@@ -118,27 +108,26 @@ public class Database {
         }
     }
 
-    public void store() throws DatabaseException {
-        LOG.info("Adding test data...");
-        factory = Persistence.createEntityManagerFactory("test");
+    public void store(Sendable sendable) throws DatabaseException {
+        LOG.info("Storing data...");
         EntityManager entityManager = factory.createEntityManager();
-        Acceleration acceleration = new Acceleration(10, 9, 8, 7);
+
+        // Create transaction for storing the data
         EntityTransaction tx = entityManager.getTransaction();
+
+        // Start the transaction and store the data
         tx.begin();
-        entityManager.persist(acceleration);
+        entityManager.persist(sendable);
         tx.commit();
-        entityManager.close();
+
         LOG.info("Finished adding test data.");
     }
 
-    public void retrieve() throws DatabaseException {
-        factory = Persistence.createEntityManagerFactory("test");
+    @SuppressWarnings("unchecked")
+    public List<Sendable> retrieve() throws DatabaseException {
         EntityManager entityManager = factory.createEntityManager();
         Query q = entityManager.createQuery("select a from Acceleration a");
-        List<Acceleration> todoList = q.getResultList();
-        for (Acceleration todo : todoList) {
-            System.out.println(todo.getxAccel() + ", " + todo.getyAccel() + ", " + todo.getzAccel() + ", " + todo.getAccelMag());
-        }
+        return q.getResultList();
     }
 
     /**
@@ -147,6 +136,11 @@ public class Database {
      * @throws DatabaseException
      */
     public void shutdown() throws DatabaseException {
+        // Shutdown factory
+        if (factory != null) {
+            factory.close();
+        }
+
         // Check there is a connection to close
         if (connection == null) {
             LOG.warning("No connection to shutdown.");
@@ -177,13 +171,22 @@ public class Database {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String args[]) {
         Database db = new Database();
         try {
+            Acceleration acceleration = new Acceleration(16, new Date(), 15, 8, 6, 2);
             db.connect();
             db.init();
-            //db.store();
-            db.retrieve();
+            db.store(acceleration);
+            List<Sendable> sendables = db.retrieve();
+            List<Acceleration> accelerations = (List<Acceleration>)(List<?>) sendables;
+
+            for(Acceleration accel : accelerations) {
+                System.out.println(accel.getUID() + ", " + accel.getTime() + ", " + accel.getxAccel() + ", " +
+                                   accel.getyAccel() + ", " + accel.getzAccel() + ", " + accel.getAccelMag());
+            }
+
             db.shutdown();
         } catch (DatabaseException e) {
             LOG.severe(e.getLocalizedMessage());

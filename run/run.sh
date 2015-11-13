@@ -32,7 +32,7 @@ run() {
 
     # Run the code
     cd ${TARGET}
-    java -classpath ${CP} ${class}
+    java -classpath ${CP}:${TARGET} ${class}
 }
 
 case "$1" in

@@ -9,6 +9,8 @@ import data.Acceleration;
 import data.SensorData;
 import exception.ThresholdException;
 
+import java.util.Date;
+
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
 
@@ -33,6 +35,6 @@ public class Controller {
         }
 
         // Create new DB Data object with new acceleration data and return
-        return new SensorData(s1.getPosition(), new Acceleration(0, 0, 0, accel));
+        return new SensorData(s1.getPosition(), new Acceleration(0, new Date(), 0, 0, 0, accel));
     }
 }

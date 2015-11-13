@@ -9,8 +9,8 @@ import java.util.Date;
  * @version 1
  */
 public interface Sendable {
-    void createUID();
-    void setTime();
+    void setUID(int uid);
+    void setTime(Date time);
     int getUID();
     Date getTime();
 }
