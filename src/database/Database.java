@@ -11,6 +11,12 @@ import data.Sendable;
 import exception.DatabaseException;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -33,7 +39,8 @@ public class Database {
                                 " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
                                 " LEVEL INT NOT NULL)");
         tables.put("ACCELDATA", "CREATE TABLE ACCELDATA " +
-                                "(PLAYERID INT NOT NULL PRIMARY KEY," +
+                                "(UID INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
+                                " PLAYERID INT NOT NULL," +
                                 " TIME TIMESTAMP NOT NULL," +
                                 " X_ACCEL INT NOT NULL," +
                                 " Y_ACCEL INT NOT NULL," +
@@ -108,7 +115,7 @@ public class Database {
         }
     }
 
-    public void store(Sendable sendable) throws DatabaseException {
+    public void store(Sendable sendable) {
         LOG.info("Storing data...");
         EntityManager entityManager = factory.createEntityManager();
 
@@ -120,14 +127,39 @@ public class Database {
         entityManager.persist(sendable);
         tx.commit();
 
-        LOG.info("Finished adding test data.");
+        LOG.info("Finished adding data.");
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Sendable> retrieve() throws DatabaseException {
-        EntityManager entityManager = factory.createEntityManager();
-        Query q = entityManager.createQuery("select a from Acceleration a");
-        return q.getResultList();
+    public <T> List<T> retrieve(Class<T> entityClass, int primaryKey) throws DatabaseException {
+        return retrieve(entityClass, primaryKey, null, null);
+    }
+    
+    public <T> List<T> retrieve(Class<T> entityClass, int primaryKey, Date startTime) {
+    	return retrieve(entityClass, primaryKey, startTime, null);
+    }
+    
+    public <T> List<T> retrieve(Class<T> entityClass, int primaryKey, Date startTime, Date endTime) {
+    	EntityManager entityManager = factory.createEntityManager();
+    	CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    	CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(entityClass);
+    	Root<T> root = criteriaQuery.from(entityClass);
+    	List<Predicate> predicates = new ArrayList<Predicate>();
+    	
+    	// If there is no start time, get all the data no matter the time stamp
+    	if (startTime != null) {
+    		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.<Date>get("time"), startTime));
+    	}
+    	
+    	// If there exists a specified end time
+    	if (endTime != null) {
+    		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.<Date>get("time"), endTime));
+    	}
+    	
+    	predicates.add(criteriaBuilder.equal(root.get("UID"), primaryKey));
+    	
+    	criteriaQuery.select(root).where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
+    	TypedQuery<T> typed = entityManager.createQuery(criteriaQuery);
+        return typed.getResultList();
     }
 
     /**
@@ -171,17 +203,27 @@ public class Database {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static void main(String args[]) {
         Database db = new Database();
         try {
-            Acceleration acceleration = new Acceleration(16, new Date(), 15, 8, 6, 2);
+        	Date test = new Date();
+            Acceleration acceleration = new Acceleration(16, new Date(), 1, 1, 1, 1);
+            Acceleration acceleration2 = new Acceleration(18, new Date(), 100, 8100, 6100, 2100);
+            
             db.connect();
             db.init();
             db.store(acceleration);
-            List<Sendable> sendables = db.retrieve();
-            List<Acceleration> accelerations = (List<Acceleration>)(List<?>) sendables;
-
+            db.store(acceleration2);
+            
+            LOG.info("Retrieving all accelerations for uid 16: ");
+            List<Acceleration> accelerations = db.retrieve(Acceleration.class, 16);
+            for(Acceleration accel : accelerations) {
+                System.out.println(accel.getUID() + ", " + accel.getTime() + ", " + accel.getxAccel() + ", " +
+                                   accel.getyAccel() + ", " + accel.getzAccel() + ", " + accel.getAccelMag());
+            }
+            
+            LOG.info("Retrieving all accelerations for uid 16 past date " + test + ": ");
+            accelerations = db.retrieve(Acceleration.class, 16, test);
             for(Acceleration accel : accelerations) {
                 System.out.println(accel.getUID() + ", " + accel.getTime() + ", " + accel.getxAccel() + ", " +
                                    accel.getyAccel() + ", " + accel.getzAccel() + ", " + accel.getAccelMag());

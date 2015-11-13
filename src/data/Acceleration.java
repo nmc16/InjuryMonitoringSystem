@@ -18,6 +18,7 @@ import java.util.Date;
 @Entity
 @Table(name = "ACCELDATA")
 public class Acceleration implements Sendable {
+	private int primaryKey;
     private int uid;
     private Date time;
     private int xAccel;
@@ -89,7 +90,6 @@ public class Acceleration implements Sendable {
     }
 
     @Override
-    @Id
     @Column(name = "PLAYERID")
     public int getUID() {
         return uid;
@@ -101,4 +101,14 @@ public class Acceleration implements Sendable {
     public Date getTime() {
         return time;
     }
+
+    @Id
+	@Column(name = "UID")
+	public int getPrimaryKey() {
+		return primaryKey;
+	}
+
+	public void setPrimaryKey(int primaryKey) {
+		this.primaryKey = primaryKey;
+	}
 }
