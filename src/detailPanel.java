@@ -108,6 +108,7 @@ public class detailPanel extends JPanel {
 		
 		
 		// here is where the issue is the object array is not being correctly created
+		//I will try to fix this -Luke
 		
 		Object[] listen = listenerList.getListenerList(); 
 		
