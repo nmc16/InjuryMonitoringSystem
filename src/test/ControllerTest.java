@@ -12,6 +12,8 @@ import data.SensorData;
 import exception.ThresholdException;
 import org.junit.*;
 
+import java.util.Date;
+
 import static java.lang.Math.pow;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,8 +31,8 @@ public class ControllerTest {
 
     @Test
     public void calculateTestUnderThreshold() {
-        sensorData = new SensorData(new Position(10, 10, 10));
-        sensorData2 = new SensorData(new Position(20, 20, 20));
+        sensorData = new SensorData(new Position(0, new Date(), 10, 10, 10));
+        sensorData2 = new SensorData(new Position(0, new Date(), 20, 20, 20));
         double expected = Math.sqrt(pow(sensorData2.getPosition().getxPos() - sensorData.getPosition().getxPos(), 2) +
                                     pow(sensorData2.getPosition().getyPos() - sensorData.getPosition().getyPos(), 2) +
                                     pow(sensorData2.getPosition().getzPos() - sensorData.getPosition().getzPos(), 2));
@@ -49,8 +51,8 @@ public class ControllerTest {
 
     @Test
     public void calculateTestOverThreshold() {
-        sensorData = new SensorData(new Position(10, 10, 10));
-        sensorData2 = new SensorData(new Position(50, 50, 50));
+        sensorData = new SensorData(new Position(0, new Date(), 10, 10, 10));
+        sensorData2 = new SensorData(new Position(0, new Date(), 50, 50, 50));
 
         SensorData sd = null;
         try {

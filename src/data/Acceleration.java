@@ -1,24 +1,23 @@
 package data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import java.util.Date;
 
 /**
  * Class that holds the acceleration data calculated by the controller
- * for all the axes (i.e. X, Y, and Z).
+ * for all the axes (i.e. X, Y, and Z) and an overall magnitude for the
+ * acceleration.
+ *
+ * Also holds player ID that is unique for each sensor and the time
+ * the acceleration was calculated from.
  *
  * @version 1
  */
 @Entity
 @Table(name = "ACCELDATA")
 public class Acceleration implements Sendable {
-	private int primaryKey;
+	private int tableID;
     private int uid;
     private Date time;
     private int xAccel;
@@ -43,7 +42,7 @@ public class Acceleration implements Sendable {
         this.accelMag = accelMag;
     }
 
-    @Column(name = "X_ACCEL")
+    @Column(name = "X_ACCEL", nullable = false)
     public int getxAccel() {
         return xAccel;
     }
@@ -52,7 +51,7 @@ public class Acceleration implements Sendable {
         this.xAccel = xAccel;
     }
 
-    @Column(name = "Y_ACCEL")
+    @Column(name = "Y_ACCEL", nullable = false)
     public int getyAccel() {
         return yAccel;
     }
@@ -61,7 +60,7 @@ public class Acceleration implements Sendable {
         this.yAccel = yAccel;
     }
 
-    @Column(name = "Z_ACCEL")
+    @Column(name = "Z_ACCEL", nullable = false)
     public int getzAccel() {
         return zAccel;
     }
@@ -70,7 +69,7 @@ public class Acceleration implements Sendable {
         this.zAccel = zAccel;
     }
 
-    @Column(name = "ACCEL")
+    @Column(name = "ACCEL", nullable = false)
     public int getAccelMag() {
         return accelMag;
     }
@@ -90,25 +89,26 @@ public class Acceleration implements Sendable {
     }
 
     @Override
-    @Column(name = "PLAYERID")
+    @Column(name = "PLAYERID", nullable = false)
     public int getUID() {
         return uid;
     }
 
     @Override
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "TIME")
+    @Column(name = "TIME", nullable = false)
     public Date getTime() {
         return time;
     }
 
     @Id
-	@Column(name = "UID")
-	public int getPrimaryKey() {
-		return primaryKey;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "INDEX")
+	public int getTableID() {
+		return tableID;
 	}
 
-	public void setPrimaryKey(int primaryKey) {
-		this.primaryKey = primaryKey;
+	public void setTableID(int tableID) {
+		this.tableID = tableID;
 	}
 }

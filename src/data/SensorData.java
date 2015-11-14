@@ -16,11 +16,11 @@ public class SensorData {
     private Date date;
 
     public SensorData(int x, int y, int z) {
-        position = new Position(x, y, z);
+        position = new Position(0, new Date(), x, y, z);
     }
 
     public SensorData(int x, int y, int z, int xAccel, int yAccel, int zAccel, int accelMag) {
-        position = new Position(x, y, z);
+        position = new Position(0, new Date(), x, y, z);
     }
 
     public SensorData(Position position) {

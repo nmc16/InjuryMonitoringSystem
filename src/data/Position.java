@@ -1,8 +1,7 @@
 package data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import java.io.Serializable;
+import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Class to track the x, y, and z co-ordinates of the accelerometer in order
@@ -11,16 +10,22 @@ import java.io.Serializable;
  * @version 1
  */
 @Entity
-public class Position implements Serializable {
+@Table(name = "POSDATA")
+public class Position implements Sendable {
+    private int tableID;
+    private int uid;
+    private Date time;
     private int xPos;
     private int yPos;
     private int zPos;
 
     public Position() {
-        this(0, 0, 0);
+        this(0, new Date(), 0, 0, 0);
     }
 
-    public Position(int xPos, int yPos, int zPos) {
+    public Position(int uid, Date time, int xPos, int yPos, int zPos) {
+        this.uid = uid;
+        this.time = time;
         this.xPos = xPos;
         this.yPos = yPos;
         this.zPos = zPos;
@@ -51,5 +56,39 @@ public class Position implements Serializable {
 
     public void setzPos(int zPos) {
         this.zPos = zPos;
+    }
+
+    @Override
+    public void setUID(int uid) {
+        this.uid = uid;
+    }
+
+    @Override
+    public void setTime(Date time) {
+        this.time = time;
+    }
+
+    @Override
+    @Column(name = "PLAYERID", nullable = false)
+    public int getUID() {
+        return uid;
+    }
+
+    @Override
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "TIME", nullable = false)
+    public Date getTime() {
+        return time;
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "INDEX")
+    public int getTableID() {
+        return tableID;
+    }
+
+    public void setTableID(int tableID) {
+        this.tableID = tableID;
     }
 }
