@@ -1,22 +1,10 @@
 package database;
 
-/**
- * Manages database operations for the Derby database using the JPA.
- *
- * Can create a connection to the database and create all the needed
- * tables if they don't already exist.
- *
- * Can store/delete {@link data.Sendable} data that uses the persistence
- * API annotations. Can query data from the tables using time, player IDs,
- * and thresholds as criteria.
- *
- * @version 1
- */
-
-import data.Acceleration;
-import data.Position;
-import data.Sendable;
+import sendable.*;
 import exception.DatabaseException;
+import sendable.alarm.*;
+import sendable.data.Acceleration;
+import sendable.data.Position;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -29,6 +17,18 @@ import java.util.*;
 import java.util.Date;
 import java.util.logging.Logger;
 
+/**
+ * Manages database operations for the Derby database using the JPA.
+ *
+ * Can create a connection to the database and create all the needed
+ * tables if they don't already exist.
+ *
+ * Can store/delete {@link sendable.Sendable} sendable that uses the persistence
+ * API annotations. Can query sendable from the tables using time, player IDs,
+ * and thresholds as criteria.
+ *
+ * @version 1
+ */
 public class Database {
     private static final String driverClass = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String dbName = "sensorDB";
@@ -43,9 +43,17 @@ public class Database {
         // Create map that holds table creation strings
         tables = new HashMap<String, String>();
         tables.put("ALARMDATA", "CREATE TABLE ALARMDATA " +
-                                "(PLAYERID INT NOT NULL PRIMARY KEY," +
-                                " ENTRY_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-                                " LEVEL INT NOT NULL)");
+                                "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
+                                " UID INT NOT NULL," +
+                                " TIME TIMESTAMP NOT NULL, " +
+                                " CAUSE_INDEX INT)");
+        tables.put("CAUSE", "CREATE TABLE CAUSE " +
+                            "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
+                            " MSG VARCHAR(50), " +
+                            " DTYPE VARCHAR(20), " +
+                            " PLAYERID INT, " +
+                            " PRIORITY VARCHAR(10), " +
+                            " THRESHOLD INT)");
         tables.put("ACCELDATA", "CREATE TABLE ACCELDATA " +
                                 "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                                 " PLAYERID INT NOT NULL," +
@@ -139,7 +147,7 @@ public class Database {
     }
 
     /**
-     * Stores the data in the {@link Sendable} object into the database in the table
+     * Stores the sendable in the {@link Sendable} object into the database in the table
      * pointed to in the entity class.
      *
      * Sendable class must use the entity class annotations from the JPA.
@@ -149,10 +157,10 @@ public class Database {
     public void store(Sendable sendable) {
         EntityManager entityManager = factory.createEntityManager();
 
-        // Create transaction for storing the data
+        // Create transaction for storing the sendable
         EntityTransaction tx = entityManager.getTransaction();
 
-        // Start the transaction and store the data
+        // Start the transaction and store the sendable
         tx.begin();
         entityManager.persist(sendable);
 
@@ -163,7 +171,7 @@ public class Database {
     }
 
     /**
-     * Retrieves all data from the database for the player ID given and parses it
+     * Retrieves all sendable from the database for the player ID given and parses it
      * into a list of the entity class searched for.
      *
      * @param entityClass Class type to search for
@@ -176,7 +184,7 @@ public class Database {
     }
 
     /**
-     * Retrieves all data from the database for the player ID given if
+     * Retrieves all sendable from the database for the player ID given if
      * its entry time was past the start time.
      *
      * Parses the results into a list of the entity class searched for.
@@ -192,7 +200,7 @@ public class Database {
     }
 
     /**
-     * Retrieves all data from the database for the player ID given if
+     * Retrieves all sendable from the database for the player ID given if
      * its entry time was past the start time and before the end time.
      *
      * Parses the results into a list of the entity class searched for.
@@ -229,7 +237,7 @@ public class Database {
         // Set the player ID to search for
     	predicates.add(criteriaBuilder.equal(root.get("UID"), playerID));
 
-        // Query the data from the database using the predicates
+        // Query the sendable from the database using the predicates
     	criteriaQuery.select(root).where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
     	TypedQuery<T> typed = entityManager.createQuery(criteriaQuery);
         return typed.getResultList();
@@ -244,7 +252,7 @@ public class Database {
     public void remove(Sendable sendable) {
         EntityManager entityManager = factory.createEntityManager();
 
-        // Create transaction for storing the data
+        // Create transaction for storing the sendable
         EntityTransaction tx = entityManager.getTransaction();
 
         // Start the transaction and remove the object
@@ -307,13 +315,30 @@ public class Database {
 
             Acceleration acceleration2 = new Acceleration(16, new Date(), 100, 8100, 6100, 2100);
             Position position2 = new Position(16, new Date(), 4, 5, 6);
-            
+            Alarm alarm = new Alarm(10, new Date(), new PlayerCause(10));
+            Alarm alarm2 = new Alarm(10, new Date(), new TrainerCause(Priority.MAJOR));
+            Alarm alarm3 = new Alarm(10, new Date(), new DataCause(100));
+
             db.connect();
             db.init();
             db.store(acceleration);
             db.store(acceleration2);
             db.store(position1);
             db.store(position2);
+
+            LOG.info("=== STORING ALARM DATA ===");
+            db.store(alarm);
+            LOG.info("=== STORING ALARM2 DATA ===");
+            db.store(alarm2);
+            LOG.info("=== STORING ALARM3 DATA ===");
+            db.store(alarm3);
+
+            LOG.info("Retrieving all accelerations for uid 16: ");
+            List<Alarm> alarms = db.retrieve(Alarm.class, 10);
+            for (Alarm a : alarms) {
+                System.out.println(a.getUID() + ", " + a.getTime() + ", " + (a.getCause() instanceof PlayerCause) +
+                                    ", " + (a.getCause() instanceof TrainerCause) + ", " + (a.getCause() instanceof DataCause));
+            }
             
             LOG.info("Retrieving all accelerations for uid 16: ");
             List<Acceleration> accelerations = db.retrieve(Acceleration.class, 16);

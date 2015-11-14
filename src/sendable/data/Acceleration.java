@@ -1,11 +1,13 @@
-package data;
+package sendable.data;
+
+import sendable.Sendable;
 
 import javax.persistence.*;
 
 import java.util.Date;
 
 /**
- * Class that holds the acceleration data calculated by the controller
+ * Class that holds the acceleration sendable calculated by the controller
  * for all the axes (i.e. X, Y, and Z) and an overall magnitude for the
  * acceleration.
  *

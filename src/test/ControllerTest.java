@@ -1,14 +1,8 @@
 package test;
 
-/**
- * Test cases to test the functionality of the Database Controller.
- *
- * @see controller.Controller
- */
-
 import controller.Controller;
-import data.Position;
-import data.SensorData;
+import sendable.data.Position;
+import sendable.SensorData;
 import exception.ThresholdException;
 import org.junit.*;
 
@@ -19,6 +13,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+/**
+ * Test cases to test the functionality of the Database Controller.
+ *
+ * @see controller.Controller
+ */
 public class ControllerTest {
     private Controller controller;
     private SensorData sensorData;
@@ -46,7 +45,7 @@ public class ControllerTest {
         }
 
         assertNotNull("Sensor Database Data was never initialized!", sd);
-        assertEquals("Acceleration data calculation was not equal!", expected, sd.getAcceleration().getAccelMag(), 0);
+        assertEquals("Acceleration sendable calculation was not equal!", expected, sd.getAcceleration().getAccelMag(), 0);
     }
 
     @Test

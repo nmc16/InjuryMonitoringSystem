@@ -1,12 +1,12 @@
 package controller;
 
 /**
- * Database controller to handle the calculation of data.
+ * Database controller to handle the calculation of sendable.
  *
  * @version 1
  */
-import data.Acceleration;
-import data.SensorData;
+import sendable.data.Acceleration;
+import sendable.SensorData;
 import exception.ThresholdException;
 
 import java.util.Date;
@@ -23,7 +23,7 @@ public class Controller {
     }
 
     public SensorData calculate(SensorData s1, SensorData s2) throws ThresholdException {
-        // Calculate the acceleration data
+        // Calculate the acceleration sendable
         int deltaX = s2.getPosition().getxPos() - s1.getPosition().getxPos();
         int deltaY = s2.getPosition().getyPos() - s1.getPosition().getyPos();
         int deltaZ = s2.getPosition().getzPos() - s1.getPosition().getzPos();
@@ -34,7 +34,7 @@ public class Controller {
             throw new ThresholdException("Threshold value exceeded: " + accel);
         }
 
-        // Create new DB Data object with new acceleration data and return
+        // Create new DB Data object with new acceleration sendable and return
         return new SensorData(s1.getPosition(), new Acceleration(0, new Date(), 0, 0, 0, accel));
     }
 }

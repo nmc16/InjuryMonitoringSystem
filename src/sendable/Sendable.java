@@ -1,4 +1,4 @@
-package data;
+package sendable;
 
 import java.util.Date;
 

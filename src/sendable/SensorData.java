@@ -1,10 +1,13 @@
-package data;
+package sendable;
+
+import sendable.data.Acceleration;
+import sendable.data.Position;
 
 import javax.persistence.*;
 import java.util.Date;
 
 /**
- * Class to hold the data read from the sensor.
+ * Class to hold the sendable read from the sensor.
  *
  * @version 1
  */

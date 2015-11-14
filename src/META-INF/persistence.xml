@@ -4,8 +4,13 @@
              version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
     <persistence-unit name="sdb" transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <class>data.Acceleration</class>
-        <class>data.Position</class>
+        <class>sendable.data.Acceleration</class>
+        <class>sendable.data.Position</class>
+        <class>sendable.alarm.Alarm</class>
+        <class>sendable.alarm.Cause</class>
+        <class>sendable.alarm.PlayerCause</class>
+        <class>sendable.alarm.TrainerCause</class>
+        <class>sendable.alarm.DataCause</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver" />
             <property name="javax.persistence.jdbc.url"

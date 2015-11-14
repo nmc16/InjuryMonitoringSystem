@@ -1,7 +1,7 @@
 package test;
 
-import data.Acceleration;
-import data.Position;
+import sendable.data.Acceleration;
+import sendable.data.Position;
 import database.Database;
 import exception.DatabaseException;
 import org.junit.Before;

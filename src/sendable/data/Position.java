@@ -1,11 +1,13 @@
-package data;
+package sendable.data;
+
+import sendable.Sendable;
 
 import javax.persistence.*;
 import java.util.Date;
 
 /**
  * Class to track the x, y, and z co-ordinates of the accelerometer in order
- * to calculate the acceleration data.
+ * to calculate the acceleration sendable.
  *
  * @version 1
  */
