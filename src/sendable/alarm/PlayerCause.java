@@ -17,9 +17,17 @@ import javax.persistence.Table;
 public class PlayerCause extends Cause {
     private int playerID;
 
-    public PlayerCause() {}
+    public PlayerCause() {
+        super();
+    }
 
     public PlayerCause(int playerID) {
+        super();
+        this.playerID = playerID;
+    }
+
+    public PlayerCause(int playerID, String message) {
+        super(message);
         this.playerID = playerID;
     }
 
@@ -30,5 +38,23 @@ public class PlayerCause extends Cause {
 
     public void setPlayerID(int playerID) {
         this.playerID = playerID;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PlayerCause playerCause = (PlayerCause) o;
+
+        return playerID == playerCause.getPlayerID() && super.equals(playerCause);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 11;
+        result = 37 * result + super.hashCode();
+        result = 37 * result + playerID;
+        return result;
     }
 }

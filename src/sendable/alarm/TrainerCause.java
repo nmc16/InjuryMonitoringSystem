@@ -14,9 +14,17 @@ import javax.persistence.*;
 public class TrainerCause extends Cause {
     private Priority priority;
 
-    public TrainerCause() {}
+    public TrainerCause() {
+        super();
+    }
 
     public TrainerCause(Priority priority) {
+        super();
+        this.priority = priority;
+    }
+
+    public TrainerCause(Priority priority, String message) {
+        super(message);
         this.priority = priority;
     }
 
@@ -28,5 +36,24 @@ public class TrainerCause extends Cause {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TrainerCause trainerCause = (TrainerCause) o;
+
+        return priority == trainerCause.getPriority() && super.equals(trainerCause);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 11;
+        result = 37 * result + super.hashCode();
+        result = 37 * result + (priority != null ? priority.hashCode() : 0);
+        return result;
     }
 }

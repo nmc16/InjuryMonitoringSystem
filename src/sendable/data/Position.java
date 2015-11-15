@@ -93,4 +93,29 @@ public class Position implements Sendable {
     public void setTableID(int tableID) {
         this.tableID = tableID;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Position position = (Position) o;
+
+        return uid == position.getUID() &&
+               xPos == position.getxPos() &&
+               yPos == position.getyPos() &&
+               zPos == position.getzPos() &&
+               time != null ? time.equals(position.getTime()) : position.getTime() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 11;
+        result = 37 * result + uid;
+        result = 37 * result + (time != null ? time.hashCode() : 0);
+        result = 37 * result + xPos;
+        result = 37 * result + yPos;
+        result = 37 * result + zPos;
+        return result;
+    }
 }

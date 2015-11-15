@@ -17,9 +17,17 @@ import javax.persistence.Table;
 public class DataCause extends Cause {
     private int threshold;
 
-    public DataCause() {}
+    public DataCause() {
+        super();
+    }
 
     public DataCause(int threshold) {
+        super();
+        this.threshold = threshold;
+    }
+
+    public DataCause(int threshold, String message) {
+        super(message);
         this.threshold = threshold;
     }
 
@@ -30,5 +38,23 @@ public class DataCause extends Cause {
 
     public void setThreshold(int threshold) {
         this.threshold = threshold;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DataCause dataCause = (DataCause) o;
+
+        return threshold == dataCause.getThreshold() && super.equals(dataCause);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 11;
+        result = 37 * result + super.hashCode();
+        result = 37 * result + threshold;
+        return result;
     }
 }

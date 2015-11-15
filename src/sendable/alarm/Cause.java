@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Entity
 public class Cause {
     private int tableID;
-    private String message;
+    protected String message;
 
     public Cause() {
         message = "";
@@ -39,5 +39,22 @@ public class Cause {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DataCause dataCause = (DataCause) o;
+
+        return message != null ? message.equals(dataCause.getMessage()) : dataCause.getMessage() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 11;
+        result = 37 * result + (message != null ? message.hashCode(): 0);
+        return result;
     }
 }

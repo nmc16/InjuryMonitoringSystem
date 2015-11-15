@@ -73,4 +73,25 @@ public class Alarm implements Sendable {
     public Date getTime() {
         return time;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Alarm alarm = (Alarm) o;
+
+        return uid == alarm.getUID() &&
+               time != null ? time.equals(alarm.getTime()) : alarm.getTime() == null &&
+               cause != null ? cause.equals(alarm.getCause()) : alarm.getCause() == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = uid;
+        result = 37 * result + (time != null ? time.hashCode() : 0);
+        result = 37 * result + (cause != null ? cause.hashCode() : 0);
+        return result;
+    }
 }
