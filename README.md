@@ -1,1 +1,5 @@
 # InjuryMonitoringSystem
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
