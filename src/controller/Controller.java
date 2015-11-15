@@ -6,10 +6,8 @@ package controller;
  * @version 1
  */
 import sendable.data.Acceleration;
-import sendable.SensorData;
 import exception.ThresholdException;
-
-import java.util.Date;
+import sendable.data.Position;
 
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
@@ -22,11 +20,15 @@ public class Controller {
         this.threshold = threshold;
     }
 
-    public SensorData calculate(SensorData s1, SensorData s2) throws ThresholdException {
+    public Acceleration calculate(Position p1, Position p2) throws ThresholdException {
         // Calculate the acceleration sendable
-        int deltaX = s2.getPosition().getxPos() - s1.getPosition().getxPos();
-        int deltaY = s2.getPosition().getyPos() - s1.getPosition().getyPos();
-        int deltaZ = s2.getPosition().getzPos() - s1.getPosition().getzPos();
+        int deltaX = p2.getxPos() - p1.getxPos();
+        int deltaY = p2.getyPos() - p1.getyPos();
+        int deltaZ = p2.getzPos() - p1.getzPos();
+
+        int xAccel = (int) (deltaX / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
+        int yAccel = (int) (deltaY / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
+        int zAccel = (int) (deltaZ / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
 
         double accel = sqrt(pow(deltaX, 2) + pow(deltaY, 2) + pow(deltaZ, 2));
 
@@ -35,6 +37,6 @@ public class Controller {
         }
 
         // Create new DB Data object with new acceleration sendable and return
-        return new SensorData(s1.getPosition(), new Acceleration(0, new Date(), 0, 0, 0, accel));
+        return new Acceleration(p2.getUID(), p2.getTime(), xAccel, yAccel, zAccel, accel);
     }
 }

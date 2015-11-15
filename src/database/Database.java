@@ -2,9 +2,6 @@ package database;
 
 import sendable.*;
 import exception.DatabaseException;
-import sendable.alarm.*;
-import sendable.data.Acceleration;
-import sendable.data.Position;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -94,7 +91,7 @@ public class Database {
             LOG.info("Connecting to database...");
 
             // Load the database driver
-            Class.forName(driverClass);
+            Class.forName(driverClass).newInstance();
 
             // Create the connection
             connection = DriverManager.getConnection(connectionURL);
@@ -103,6 +100,12 @@ public class Database {
         } catch (ClassNotFoundException e) {
             LOG.severe("Could not find driver class: " + e.getLocalizedMessage());
             throw new DatabaseException("Could not find driver class: " + e.getLocalizedMessage(), e);
+        } catch (InstantiationException e) {
+            LOG.severe("Could not instantiate driver class: " + e.getLocalizedMessage());
+            throw new DatabaseException("Could not instantiate driver class: " + e.getLocalizedMessage(), e);
+        } catch(IllegalAccessException e) {
+            LOG.severe(e.getLocalizedMessage());
+            throw new DatabaseException(e.getLocalizedMessage(), e);
         } catch (SQLException e) {
             LOG.severe("Could not connect to database: " + e.getLocalizedMessage());
             throw new DatabaseException("Could not connect to database: " + e.getLocalizedMessage(), e);
@@ -257,7 +260,8 @@ public class Database {
 
         // Start the transaction and remove the object
         tx.begin();
-        entityManager.remove(sendable);
+        Sendable toBeRemoved = entityManager.merge(sendable);
+        entityManager.remove(toBeRemoved);
 
         // Commit and close the EM
         tx.commit();
@@ -302,75 +306,6 @@ public class Database {
                 LOG.severe("Could not shutdown Derby properly: " + e.getLocalizedMessage());
                 throw new DatabaseException("Could not shutdown Derby properly: " + e.getLocalizedMessage(), e);
             }
-        }
-    }
-
-    public static void main(String args[]) {
-        Database db = new Database();
-        try {
-            Acceleration acceleration = new Acceleration(16, new Date(), 1, 1, 1, 1);
-            Position position1 = new Position(16, new Date(), 1, 2, 3);
-
-            Date test = new Date();
-
-            Acceleration acceleration2 = new Acceleration(16, new Date(), 100, 8100, 6100, 2100);
-            Position position2 = new Position(16, new Date(), 4, 5, 6);
-            Alarm alarm = new Alarm(10, new Date(), new PlayerCause(10));
-            Alarm alarm2 = new Alarm(10, new Date(), new TrainerCause(Priority.MAJOR));
-            Alarm alarm3 = new Alarm(10, new Date(), new DataCause(100));
-
-            db.connect();
-            db.init();
-            db.store(acceleration);
-            db.store(acceleration2);
-            db.store(position1);
-            db.store(position2);
-
-            LOG.info("=== STORING ALARM DATA ===");
-            db.store(alarm);
-            LOG.info("=== STORING ALARM2 DATA ===");
-            db.store(alarm2);
-            LOG.info("=== STORING ALARM3 DATA ===");
-            db.store(alarm3);
-
-            LOG.info("Retrieving all accelerations for uid 16: ");
-            List<Alarm> alarms = db.retrieve(Alarm.class, 10);
-            for (Alarm a : alarms) {
-                System.out.println(a.getUID() + ", " + a.getTime() + ", " + (a.getCause() instanceof PlayerCause) +
-                                    ", " + (a.getCause() instanceof TrainerCause) + ", " + (a.getCause() instanceof DataCause));
-            }
-            
-            LOG.info("Retrieving all accelerations for uid 16: ");
-            List<Acceleration> accelerations = db.retrieve(Acceleration.class, 16);
-            for(Acceleration accel : accelerations) {
-                System.out.println(accel.getUID() + ", " + accel.getTime() + ", " + accel.getxAccel() + ", " +
-                                   accel.getyAccel() + ", " + accel.getzAccel() + ", " + accel.getAccelMag());
-            }
-            
-            LOG.info("Retrieving all accelerations for uid 16 past date " + test + ": ");
-            accelerations = db.retrieve(Acceleration.class, 16, test);
-            for(Acceleration accel : accelerations) {
-                System.out.println(accel.getUID() + ", " + accel.getTime() + ", " + accel.getxAccel() + ", " +
-                                   accel.getyAccel() + ", " + accel.getzAccel() + ", " + accel.getAccelMag());
-            }
-
-            LOG.info("Retrieving all positions for uid 16: ");
-            List<Position> positions = db.retrieve(Position.class, 16);
-            for(Position position : positions) {
-                System.out.println(position.getUID() + ", " + position.getTime() + ", " + position.getxPos() + ", " +
-                        position.getyPos() + ", " + position.getzPos());
-            }
-
-            LOG.info("Retrieving all positions for uid 16 past date " + test + ": ");
-            positions = db.retrieve(Position.class, 16, test);
-            for(Position position : positions) {
-                System.out.println(position.getUID() + ", " + position.getTime() + ", " + position.getxPos() + ", " +
-                        position.getyPos() + ", " + position.getzPos());
-            }
-
-            db.shutdown();
-        } catch (DatabaseException e) {
-            LOG.severe(e.getLocalizedMessage());
         }
     }
 }
