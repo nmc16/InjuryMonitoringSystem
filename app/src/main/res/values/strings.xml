@@ -1,0 +1,15 @@
+<resources>
+    <!-- An array to store players names -->
+    <!-- Using temporary values of team members, need to create a different selection -->
+
+    <string name="app_name">InjuryMonitoringSystem</string>
+    <string name="action_settings">Settings</string>
+    <string-array name= "players">
+        <item>Charlie</item>
+        <item>Luke</item>
+        <item>Nic</item>
+        <item>Abbas</item>
+    </string-array>
+    
+    
+</resources>
