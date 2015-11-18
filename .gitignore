@@ -1,0 +1,9 @@
+.idea/*
+database/*
+dependencies/*
+derby*
+./**/sensorDB
+*.class
+target/
+test/
+production/
