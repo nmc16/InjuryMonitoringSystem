@@ -8,6 +8,7 @@ JUNIT_VERSION=4.12
 HAMCREST_VERSION=1.3
 ECLIPSELINK_VERSION=2.6.1
 JPA_VERSION=2.1.0
+GSON_VERSION=2.4
 
 # Directories
 ROOT=${BASEDIR}/../dependencies
@@ -17,7 +18,8 @@ DERBY_DIR=${ROOT}/db-derby-${DERBY_VERSION}-bin
 JUNIT_JAR=${ROOT}/junit-${JUNIT_VERSION}.jar
 HAMCREST_JAR=${ROOT}/hamcrest-core-${HAMCREST_VERSION}.jar
 ECLIPSELINK_JAR=${ROOT}/eclipselink-${ECLIPSELINK_VERSION}.jar
-JPA_JAR=${ROOT}/javax.persistence_2.1.0.jar
+JPA_JAR=${ROOT}/javax.persistence_${JPA_VERSION}.jar
+GSON_JAR=${ROOT}/gson-${GSON_VERSION}.jar
 
 echo "[INFO] Checking dependency directory..."
 if [ ! -d "$ROOT" ]; then
@@ -39,14 +41,14 @@ fi
 if [ ! -f "$JUNIT_JAR" ]; then
     echo "[INFO] Junit not downloaded yet! Downloading..."
     cd ${ROOT}
-    wget -O junit-4.12.jar http://search.maven.org/remotecontent?filepath=junit/junit/4.12/junit-4.12.jar
+    wget -O ${JUNIT_JAR} http://search.maven.org/remotecontent?filepath=junit/junit/4.12/junit-4.12.jar
 fi
 
 # Download hamcrest jar if it does not already exist in the dependencies
 if [ ! -f "$HAMCREST_JAR" ]; then
     echo "[INFO] Hamcrest not downloaded yet! Downloading..."
     cd ${ROOT}
-    wget -O hamcrest-core-1.3.jar http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+    wget -O ${HAMCREST_JAR} http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
 fi
 
 # Download JPA jar if it does not already exist in the dependencies
@@ -66,6 +68,13 @@ if [ ! -f "$ECLIPSELINK_JAR" ] || [ ! -f "$JPA_JAR" ]; then
     fi
 
     rm -r eclipselink
+fi
+
+# Download junit jar if it does not already exist in the dependencies
+if [ ! -f "$GSON_JAR" ]; then
+    echo "[INFO] Junit not downloaded yet! Downloading..."
+    cd ${ROOT}
+    wget -O ${GSON_JAR} http://central.maven.org/maven2/com/google/code/gson/gson/2.4/gson-2.4.jar
 fi
 
 echo "[INFO] Finished checking dependencies."
