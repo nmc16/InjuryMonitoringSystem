@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Graph"
-        android:id="@+id/button1"
+        android:id="@+id/graph"
         android:layout_below="@+id/spinner"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -35,8 +35,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Previous Warning"
-        android:id="@+id/button2"
-        android:layout_below="@+id/button1"
+        android:id="@+id/prevWarn"
+        android:layout_below="@+id/graph"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -44,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="EMERGENCY"
-        android:id="@+id/button3"
+        android:id="@+id/emerg"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />

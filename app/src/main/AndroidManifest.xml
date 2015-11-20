@@ -20,13 +20,14 @@
         </activity>
         <activity
             android:name=".Main2Activity"
-            android:label="@string/title_activity_main2">
+            android:label="@string/title_activity_main2"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
 
         </activity>
         <activity
             android:name=".Main3Activity"
             android:label="@string/title_activity_main3"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
 
         </activity>
     </application>
