@@ -14,5 +14,6 @@ public class TestRunner {
         }
 
         System.out.println("Test Result: " + (result.wasSuccessful() ? "PASSED" : "FAILED"));
+        System.exit(0);
     }
 }
