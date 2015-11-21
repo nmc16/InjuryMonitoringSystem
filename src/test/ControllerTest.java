@@ -30,24 +30,28 @@ public class ControllerTest {
     private Controller controller;
     private Position position1;
     private Position position2;
-    private Date d1;
-    private Date d2;
+    private long t1;
+    private long t2;
 
     @Before
     public void setUp() {
         controller = new Controller(35.0);
         Calendar cal = Calendar.getInstance();
         cal.set(2012, Calendar.JANUARY, 1, 1, 1, 0);
-        cal.set(Calendar.MILLISECOND, 0);
+
+        Date d1, d2;
         d1 = cal.getTime();
+        t1 = d1.getTime();
+
         cal.set(2012, Calendar.JANUARY, 1, 1, 1, 2);
         d2 = cal.getTime();
+        t2 = d2.getTime();
     }
 
     @Test
     public void testCalculateUnderThreshold() {
-        position1 = new Position(0, d1, 10, 10, 10);
-        position2 = new Position(0, d2, 20, 20, 20);
+        position1 = new Position(0, t1, 10, 10, 10);
+        position2 = new Position(0, t2, 20, 20, 20);
         double ex = Math.sqrt(pow(position2.getxPos() - position1.getxPos(), 2) +
                               pow(position2.getyPos() - position1.getyPos(), 2) +
                               pow(position2.getzPos() - position1.getzPos(), 2));
@@ -67,8 +71,8 @@ public class ControllerTest {
 
     @Test
     public void testCalculateOverThreshold() {
-        position1 = new Position(0, d1, 10, 10, 10);
-        position2 = new Position(0, d2, 50, 50, 50);
+        position1 = new Position(0, t1, 10, 10, 10);
+        position2 = new Position(0, t2, 50, 50, 50);
 
         Acceleration acceleration = null;
         try {
@@ -108,8 +112,8 @@ public class ControllerTest {
                 Thread.sleep(500);
                 controller.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
 
-                Acceleration a1 = new Acceleration(10, d1, 0, 0, 0, 0);
-                Acceleration a2 = new Acceleration(11, d1, 0, 0, 0, 0);
+                Acceleration a1 = new Acceleration(10, t1, 0, 0, 0, 0);
+                Acceleration a2 = new Acceleration(11, t2, 0, 0, 0, 0);
                 List<Acceleration> accelerations = new ArrayList<Acceleration>();
                 accelerations.add(a1);
                 accelerations.add(a2);

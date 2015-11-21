@@ -32,6 +32,7 @@ public class Database {
     private static final String connectionURL = "jdbc:derby:" + dbName + ";create=true";
     private static final String shutdownURL = "jdbc:derby:;shutdown=true";
     private static final Logger LOG = Logger.getLogger("DBLogger");
+    private static final long NULL = -1;
     private Connection connection = null;
     private Map<String, String> tables;
     private EntityManagerFactory factory;
@@ -42,7 +43,7 @@ public class Database {
         tables.put("ALARMDATA", "CREATE TABLE ALARMDATA " +
                                 "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
                                 " UID INT NOT NULL," +
-                                " TIME TIMESTAMP NOT NULL, " +
+                                " TIME BIGINT NOT NULL, " +
                                 " CAUSE_INDEX INT)");
         tables.put("CAUSE", "CREATE TABLE CAUSE " +
                             "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
@@ -54,7 +55,7 @@ public class Database {
         tables.put("ACCELDATA", "CREATE TABLE ACCELDATA " +
                                 "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                                 " PLAYERID INT NOT NULL," +
-                                " TIME TIMESTAMP NOT NULL," +
+                                " TIME BIGINT NOT NULL," +
                                 " X_ACCEL INT NOT NULL," +
                                 " Y_ACCEL INT NOT NULL," +
                                 " Z_ACCEL INT NOT NULL," +
@@ -62,7 +63,7 @@ public class Database {
         tables.put("POSDATA", "CREATE TABLE POSDATA " +
                               "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                               " PLAYERID INT NOT NULL," +
-                              " TIME TIMESTAMP NOT NULL," +
+                              " TIME BIGINT NOT NULL," +
                               " X_POS INT NOT NULL," +
                               " Y_POS INT NOT NULL," +
                               " Z_POS INT NOT NULL)");
@@ -183,7 +184,7 @@ public class Database {
      * @return List of the result set from the database query
      */
     public <T> List<T> retrieve(Class<T> entityClass, int playerID) {
-        return retrieve(entityClass, playerID, null, null);
+        return retrieve(entityClass, playerID, NULL, NULL);
     }
 
     /**
@@ -198,8 +199,8 @@ public class Database {
      * @param <T> Class type to search for
      * @return List of the result set from the database query
      */
-    public <T> List<T> retrieve(Class<T> entityClass, int playerID, Date startTime) {
-    	return retrieve(entityClass, playerID, startTime, null);
+    public <T> List<T> retrieve(Class<T> entityClass, int playerID, long startTime) {
+    	return retrieve(entityClass, playerID, startTime, NULL);
     }
 
     /**
@@ -215,7 +216,7 @@ public class Database {
      * @param <T> Class type to search for
      * @return List of the result set from the database query
      */
-    public <T> List<T> retrieve(Class<T> entityClass, int playerID, Date startTime, Date endTime) {
+    public <T> List<T> retrieve(Class<T> entityClass, int playerID, long startTime, long endTime) {
         // Create entity manager
     	EntityManager entityManager = factory.createEntityManager();
 
@@ -228,13 +229,13 @@ public class Database {
     	List<Predicate> predicates = new ArrayList<Predicate>();
     	
     	// Add the start time to the predicates list if it exists
-    	if (startTime != null) {
-    		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.<Date>get("time"), startTime));
+    	if (startTime != NULL) {
+    		predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.<Long>get("time"), startTime));
     	}
 
         // Add the end time to the predicates list if it exists
-    	if (endTime != null) {
-    		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.<Date>get("time"), endTime));
+    	if (endTime != NULL) {
+    		predicates.add(criteriaBuilder.lessThanOrEqualTo(root.<Long>get("time"), endTime));
     	}
 
         // Set the player ID to search for

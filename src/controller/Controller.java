@@ -50,9 +50,9 @@ public class Controller implements Producer, Consumer {
         int deltaY = p2.getyPos() - p1.getyPos();
         int deltaZ = p2.getzPos() - p1.getzPos();
 
-        int xAccel = (int) (deltaX / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
-        int yAccel = (int) (deltaY / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
-        int zAccel = (int) (deltaZ / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
+        int xAccel = (int) (deltaX / ((p2.getTime() - p1.getTime()) / 1000));
+        int yAccel = (int) (deltaY / ((p2.getTime() - p1.getTime()) / 1000));
+        int zAccel = (int) (deltaZ / ((p2.getTime() - p1.getTime()) / 1000));
 
         double accel = sqrt(pow(deltaX, 2) + pow(deltaY, 2) + pow(deltaZ, 2));
 

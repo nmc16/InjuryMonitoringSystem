@@ -34,13 +34,13 @@ public class DatabaseTest {
     @Test
     public void testStore() {
         // Create one of each type of data
-        Acceleration acceleration = new Acceleration(10, new Date(), 5, 6, 7, 8);
-        Position position = new Position(10, new Date(), 1, 2, 3);
+        Acceleration acceleration = new Acceleration(10, System.currentTimeMillis(), 5, 6, 7, 8);
+        Position position = new Position(10, System.currentTimeMillis(), 1, 2, 3);
 
         // Create one of each type of alarm
-        Alarm pAlarm = new Alarm(10, new Date(), new PlayerCause(10));
-        Alarm tAlarm = new Alarm(10, new Date(), new TrainerCause(Priority.MAJOR));
-        Alarm dAlarm = new Alarm(10, new Date(), new DataCause(30));
+        Alarm pAlarm = new Alarm(10, System.currentTimeMillis(), new PlayerCause(10));
+        Alarm tAlarm = new Alarm(10, System.currentTimeMillis(), new TrainerCause(Priority.MAJOR));
+        Alarm dAlarm = new Alarm(10, System.currentTimeMillis(), new DataCause(30));
 
         // Attempt to store all the sendable entities, fails on runtime exception from DB
         database.store(acceleration);
@@ -64,9 +64,9 @@ public class DatabaseTest {
         assertEquals("There were already acceleration entries in the database!", 0, accelerations.size());
 
         // Store 3 accelerations with the same player id
-        Acceleration a1 = new Acceleration(10, new Date(), 5, 6, 7, 8);
-        Acceleration a2 = new Acceleration(10, new Date(), 15, 16, 17, 18);
-        Acceleration a3 = new Acceleration(10, new Date(), 25, 26, 27, 28);
+        Acceleration a1 = new Acceleration(10, System.currentTimeMillis(), 5, 6, 7, 8);
+        Acceleration a2 = new Acceleration(10, System.currentTimeMillis(), 15, 16, 17, 18);
+        Acceleration a3 = new Acceleration(10, System.currentTimeMillis(), 25, 26, 27, 28);
 
         database.store(a1);
         database.store(a2);
@@ -94,13 +94,13 @@ public class DatabaseTest {
         // Create the date to search after and a date that is before the search date
         Calendar cal = Calendar.getInstance();
         cal.set(2012, Calendar.JANUARY, 1);
-        Date before = cal.getTime();
-        Date searchDate = new Date();
+        long before = cal.getTime().getTime();
+        long searchDate = new Date().getTime();
 
         // Store 3 alarms with the same UID
         Alarm pAlarm = new Alarm(10, before, new PlayerCause(10));
         Alarm tAlarm = new Alarm(10, before, new TrainerCause(Priority.MAJOR));
-        Alarm dAlarm = new Alarm(10, new Date(), new DataCause(30));
+        Alarm dAlarm = new Alarm(10, System.currentTimeMillis(), new DataCause(30));
 
         database.store(pAlarm);
         database.store(tAlarm);
@@ -126,19 +126,19 @@ public class DatabaseTest {
         // Create dates to search between
         Calendar cal = Calendar.getInstance();
         cal.set(2012, Calendar.JANUARY, 1);
-        Date before = cal.getTime();
+        long before = cal.getTime().getTime();
 
         cal.set(2018, Calendar.JANUARY, 1);
-        Date after = cal.getTime();
+        long after = cal.getTime().getTime();
 
-        Date start = new Date();
+        long start = new Date().getTime();
 
         // Store 3 positions with the same UID
         Position p1 = new Position(10, before, 1, 2, 3);
-        Position p2 = new Position(10, new Date(), 10, 20, 30);
+        Position p2 = new Position(10, System.currentTimeMillis(), 10, 20, 30);
         Position p3 = new Position(10, after, 100, 200, 300);
 
-        Date end = new Date();
+        long end = new Date().getTime();
 
         database.store(p1);
         database.store(p2);
@@ -157,9 +157,9 @@ public class DatabaseTest {
     @Test
     public void testRemove() {
         // Create one of each type of data
-        Acceleration acceleration = new Acceleration(10, new Date(), 5, 6, 7, 8);
-        Position position = new Position(10, new Date(), 1, 2, 3);
-        Alarm alarm = new Alarm(10, new Date(), new PlayerCause(10));
+        Acceleration acceleration = new Acceleration(10, System.currentTimeMillis(), 5, 6, 7, 8);
+        Position position = new Position(10, System.currentTimeMillis(), 1, 2, 3);
+        Alarm alarm = new Alarm(10, System.currentTimeMillis(), new PlayerCause(10));
 
         // Attempt to store all the sendable entities, fails on runtime exception from DB
         database.store(acceleration);
