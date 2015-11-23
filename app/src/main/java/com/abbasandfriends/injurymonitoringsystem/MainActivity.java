@@ -87,11 +87,7 @@ public class MainActivity extends android.app.Activity implements AdapterView.On
     }
 
 /*
-    step 1: create the data source
-    step 2: define the appearance layout file through which the adapter will put the data inside the spinner
-    step 3: define what to do when the user clicks on the spinner using the OnItemSelectedListener
-
-
+Reminder:    
     Requests: Acceleration
     Requests: Position
     Requests: Alarm
