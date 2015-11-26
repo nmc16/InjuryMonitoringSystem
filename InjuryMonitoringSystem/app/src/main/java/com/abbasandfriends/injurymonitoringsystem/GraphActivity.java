@@ -12,7 +12,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 
-public class Main3Activity extends android.app.Activity {
+public class GraphActivity extends android.app.Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
