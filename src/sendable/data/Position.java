@@ -16,16 +16,16 @@ import java.util.Date;
 public class Position implements Sendable {
     private int tableID;
     private int uid;
-    private Date time;
+    private long time;
     private int xPos;
     private int yPos;
     private int zPos;
 
     public Position() {
-        this(0, new Date(), 0, 0, 0);
+        this(0, 0, 0, 0, 0);
     }
 
-    public Position(int uid, Date time, int xPos, int yPos, int zPos) {
+    public Position(int uid, long time, int xPos, int yPos, int zPos) {
         this.uid = uid;
         this.time = time;
         this.xPos = xPos;
@@ -66,7 +66,7 @@ public class Position implements Sendable {
     }
 
     @Override
-    public void setTime(Date time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -77,10 +77,14 @@ public class Position implements Sendable {
     }
 
     @Override
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "TIME", nullable = false)
-    public Date getTime() {
+    public long getTime() {
         return time;
+    }
+
+    @Override
+    public Date getDate() {
+        return new Date(time);
     }
 
     @Id
@@ -105,14 +109,14 @@ public class Position implements Sendable {
                xPos == position.getxPos() &&
                yPos == position.getyPos() &&
                zPos == position.getzPos() &&
-               time != null ? time.equals(position.getTime()) : position.getTime() == null;
+               time == position.getTime();
     }
 
     @Override
     public int hashCode() {
         int result = 11;
         result = 37 * result + uid;
-        result = 37 * result + (time != null ? time.hashCode() : 0);
+        result = 37 * result + Long.valueOf(time).hashCode();
         result = 37 * result + xPos;
         result = 37 * result + yPos;
         result = 37 * result + zPos;
