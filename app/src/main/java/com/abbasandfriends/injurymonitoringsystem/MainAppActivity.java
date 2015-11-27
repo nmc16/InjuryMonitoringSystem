@@ -1,5 +1,6 @@
 package com.abbasandfriends.injurymonitoringsystem;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -10,6 +11,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
+
+import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
+
+import java.util.Date;
+
+import sendable.alarm.Alarm;
+import sendable.alarm.PlayerCause;
 
 
 /**
@@ -71,6 +79,9 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             @Override
             public void onClick(View view) {
                 Toast.makeText(getBaseContext(), "Emergency Pressed", Toast.LENGTH_SHORT).show();
+                AlertDialog alertDialog = new AlarmDialog(MainAppActivity.this).
+                        create(new Alarm(10, new Date(), new PlayerCause(10)));
+                alertDialog.show();
             }
 
         });
