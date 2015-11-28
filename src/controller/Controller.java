@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import exception.CommunicationException;
@@ -31,8 +29,8 @@ import static java.lang.Math.pow;
  */
 public class Controller implements Producer, Consumer {
 
-	private static final int BUFFER_SIZE = 65536;
-	private Gson gson = new Gson();
+    private static final int BUFFER_SIZE = 65536;
+    private Gson gson = new Gson();
     private InputStream inputStream;
     private OutputStream outputStream;
     private double threshold;
@@ -44,6 +42,17 @@ public class Controller implements Producer, Consumer {
         this.threshold = threshold;
     }
 
+    /**
+     * Calculates the acceleration given two positions from the accelerometer.
+     *
+     * The result is an {@link Acceleration} class that holds the magnitudes
+     * of all the component accelerations and the total magnitude.
+     *
+     * @param p1 Starting position from the sensor
+     * @param p2 Final position of the senser
+     * @return Acceleration object holding the magnitudes of the components
+     * @throws ThresholdException Thrown if calculation crosses the threshold defined in constructor
+     */
     public Acceleration calculate(Position p1, Position p2) throws ThresholdException {
         // Calculate the acceleration sendable
         int deltaX = p2.getxPos() - p1.getxPos();
@@ -78,8 +87,8 @@ public class Controller implements Producer, Consumer {
                 }
             }
 
-            // Remove all the NUL characters from the string
-			String msg = new String(buffer);
+            // Remove all the NULL characters from the string
+            String msg = new String(buffer);
             msg = msg.replace("\u0000", "").replace("\\u0000", "");
 
             // Create json reader to read the seperate objects from the string
@@ -89,8 +98,8 @@ public class Controller implements Producer, Consumer {
             // Add the objects to the list until the end document token is received
             List<T> received = new ArrayList<T>();
             while (jsonReader.hasNext() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
-                T t = gson.fromJson(jsonReader, sendable);
-                received.add(t);
+                T parsedObj = gson.fromJson(jsonReader, sendable);
+                received.add(parsedObj);
             }
 
             return received;
@@ -119,8 +128,8 @@ public class Controller implements Producer, Consumer {
 			byte buffer[] = msg.getBytes();
 			outputStream.write(buffer);
 
-		} catch (IOException e) {
-			throw new CommunicationException("Could not write to client output buffer", e);
+        } catch (IOException e) {
+            throw new CommunicationException("Could not write to client output buffer", e);
 		}
 	}
 
