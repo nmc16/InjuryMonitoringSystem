@@ -33,13 +33,11 @@ public class Controller implements Producer, Consumer {
 
 	private static final int BUFFER_SIZE = 65536;
 	private Gson gson = new Gson();
-    private InputStream inputStream;
     private OutputStream outputStream;
     private double threshold;
     private ServerSocket server;
     private Socket clientSocket;
-    private Socket inputSocket;
-    
+
     public Controller(double threshold) {
         this.threshold = threshold;
     }
@@ -57,7 +55,8 @@ public class Controller implements Producer, Consumer {
         double accel = sqrt(pow(deltaX, 2) + pow(deltaY, 2) + pow(deltaZ, 2));
 
         if (accel >= threshold) {
-            throw new ThresholdException("Threshold value exceeded: " + accel);
+            throw new ThresholdException("Threshold value exceeded: " + accel,
+                                         new Acceleration(p2.getUID(), p2.getTime(), xAccel, yAccel, zAccel, accel));
         }
 
         // Create new DB Data object with new acceleration sendable and return
@@ -65,10 +64,10 @@ public class Controller implements Producer, Consumer {
     }
 
     /**
-     * @see Consumer#receive(Class)
+     * @see Consumer#receive(InputStream, Class)
      */
 	@Override
-	public <T extends Sendable> List<T> receive(Class<T> sendable) throws CommunicationException {
+	public <T extends Sendable> List<T> receive(InputStream inputStream, Class<T> sendable) throws CommunicationException {
 		try {
             // Write the bytes on the socket buffer until the EOF is reached
 			byte buffer[] = new byte[BUFFER_SIZE];
@@ -137,13 +136,25 @@ public class Controller implements Producer, Consumer {
 		// Start the server and create the input socket
 		try {
 			server = new ServerSocket(hostPort);
-			inputSocket = server.accept();
-            inputStream = inputSocket.getInputStream();
 
 		} catch (IOException e) {
 			throw new CommunicationException("Could not open server socket or input stream", e);
 		}
 	}
+
+    public Socket acceptClient() throws CommunicationException {
+        // Check that the socket is not already open
+        if (server == null || server.isClosed()) {
+            throw new CommunicationException("Host socket is closed!");
+        }
+
+        // Start the server and create the input socket
+        try {
+            return server.accept();
+        } catch (IOException e) {
+            throw new CommunicationException("Could not open server socket or input stream", e);
+        }
+    }
 
     /**
      * @see Consumer#disconnectHost()
@@ -151,14 +162,6 @@ public class Controller implements Producer, Consumer {
 	@Override
 	public void disconnectHost() throws CommunicationException {
         try {
-            // Close the input stream and the socket
-            inputStream.close();
-
-            // If the socket is still open close it
-            if (!inputSocket.isClosed()) {
-                inputSocket.close();
-            }
-
             // Close server socket
             server.close();
 

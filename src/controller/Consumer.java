@@ -3,6 +3,7 @@ package controller;
 import exception.CommunicationException;
 import sendable.Sendable;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -33,7 +34,7 @@ public interface Consumer {
      * @return Returns a list containing the objects on the buffer
      * @throws CommunicationException Thrown if could not read the input buffer
      */
-	<T extends Sendable> List<T> receive(Class<T> sendable) throws CommunicationException;
+	<T extends Sendable> List<T> receive(InputStream inputStream, Class<T> sendable) throws CommunicationException;
 
     /**
      * Attempts to disconnect the host server socket and close the input stream attached
