@@ -1,6 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
+    configurations {
+        all*.exclude group: 'javax', module: 'persistence'
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
     defaultConfig {
@@ -9,6 +12,7 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -23,13 +27,19 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile 'com.android.support:design:23.1.0'
-
-
-
+    compile fileTree(dir: 'libs', include: ['mpandroidchartlibrary-2-1-6.jar'])
+    compile('com.android.support:design:23.1.0') {
+        exclude module: 'support-v4'
+    }
+    compile('com.google.code.gson:gson:2.5') {
+        exclude module: 'javax'
+        exclude module: 'persistence'
+    }
+    compile('junit:junit:4.12') {
+        exclude module: 'javax'
+        exclude module: 'persistence'
+    }
+    compile 'org.eclipse.persistence:javax.persistence:2.1.0'
 }
 
 
