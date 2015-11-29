@@ -4,22 +4,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import com.google.gson.*;
 import exception.CommunicationException;
+import sendable.DataType;
 import sendable.Sendable;
+import sendable.alarm.*;
 import sendable.data.Acceleration;
 import exception.ThresholdException;
 import sendable.data.Position;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import com.google.gson.Gson;
 
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
@@ -31,26 +33,78 @@ import static java.lang.Math.pow;
  */
 public class Controller implements Producer, Consumer {
 
-	private static final int BUFFER_SIZE = 65536;
-	private Gson gson = new Gson();
+    private static final int BUFFER_SIZE = 65536;
+    private Gson gson;
     private OutputStream outputStream;
     private double threshold;
     private ServerSocket server;
     private Socket clientSocket;
 
+    private class CauseDeserializer implements JsonDeserializer<Cause> {
+
+        @Override
+        public Cause deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            Gson gson = new Gson();
+
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            int causeType = jsonObject.get("type").getAsInt();
+
+            if (causeType == DataType.CAUSE_DATA) {
+                return gson.fromJson(jsonElement, DataCause.class);
+            } else if (causeType == DataType.CAUSE_TRAINER) {
+                return gson.fromJson(jsonElement, TrainerCause.class);
+            } else if (causeType == DataType.CAUSE_PLAYER) {
+                return gson.fromJson(jsonElement, PlayerCause.class);
+            } else {
+                throw new JsonParseException("Could not find object where data type is " + causeType);
+            }
+        }
+    }
+    private class SendableDeserializer implements JsonDeserializer<Sendable> {
+
+        @Override
+        public Sendable deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            Gson gson = new GsonBuilder().registerTypeAdapter(Cause.class, new CauseDeserializer()).create();
+
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            int dataType = jsonObject.get("type").getAsInt();
+
+            if (dataType == DataType.POS) {
+                return gson.fromJson(jsonElement, Position.class);
+            } else if (dataType == DataType.ACCEL) {
+                return gson.fromJson(jsonElement, Acceleration.class);
+            } else if (dataType == DataType.ALARM) {
+                return gson.fromJson(jsonElement, Alarm.class);
+            } else {
+                throw new JsonParseException("Could not find object where data type is " + dataType);
+            }
+        }
+    }
     public Controller(double threshold) {
         this.threshold = threshold;
+        gson = new GsonBuilder().registerTypeAdapter(Sendable.class, new SendableDeserializer()).create();
     }
 
+    /**
+     * Calculates the acceleration given two positions from the accelerometer.
+     *
+     * The result is an {@link Acceleration} class that holds the magnitudes
+     * of all the component accelerations and the total magnitude.
+     *
+     * @param p1 Starting position from the sensor
+     * @param p2 Final position of the senser
+     * @return Acceleration object holding the magnitudes of the components
+     * @throws ThresholdException Thrown if calculation crosses the threshold defined in constructor
+     */
     public Acceleration calculate(Position p1, Position p2) throws ThresholdException {
         // Calculate the acceleration sendable
         int deltaX = p2.getxPos() - p1.getxPos();
         int deltaY = p2.getyPos() - p1.getyPos();
         int deltaZ = p2.getzPos() - p1.getzPos();
 
-        int xAccel = (int) (deltaX / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
-        int yAccel = (int) (deltaY / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
-        int zAccel = (int) (deltaZ / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
+        int xAccel = (int) (deltaX / ((p2.getTime() - p1.getTime()) / 1000.0));
+        int yAccel = (int) (deltaY / ((p2.getTime() - p1.getTime()) / 1000.0));
+        int zAccel = (int) (deltaZ / ((p2.getTime() - p1.getTime()) / 1000.0));
 
         double accel = sqrt(pow(deltaX, 2) + pow(deltaY, 2) + pow(deltaZ, 2));
 
@@ -64,10 +118,10 @@ public class Controller implements Producer, Consumer {
     }
 
     /**
-     * @see Consumer#receive(InputStream, Class)
+     * @see Consumer#receive(InputStream)
      */
 	@Override
-	public <T extends Sendable> List<T> receive(InputStream inputStream, Class<T> sendable) throws CommunicationException {
+	public List<Sendable> receive(InputStream inputStream) throws CommunicationException {
 		try {
             // Write the bytes on the socket buffer until the EOF is reached
 			byte buffer[] = new byte[BUFFER_SIZE];
@@ -77,19 +131,19 @@ public class Controller implements Producer, Consumer {
                 }
             }
 
-            // Remove all the NUL characters from the string
-			String msg = new String(buffer);
+            // Remove all the NULL characters from the string
+            String msg = new String(buffer);
             msg = msg.replace("\u0000", "").replace("\\u0000", "");
 
-            // Create json reader to read the seperate objects from the string
+            // Create json reader to read the separate objects from the string
             JsonReader jsonReader = new JsonReader(new StringReader(msg));
             jsonReader.setLenient(true);
 
             // Add the objects to the list until the end document token is received
-            List<T> received = new ArrayList<T>();
+            List<Sendable> received = new ArrayList<Sendable>();
             while (jsonReader.hasNext() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
-                T t = gson.fromJson(jsonReader, sendable);
-                received.add(t);
+                Sendable parsedObj = gson.fromJson(jsonReader, Sendable.class);
+                received.add(parsedObj);
             }
 
             return received;
@@ -118,16 +172,16 @@ public class Controller implements Producer, Consumer {
 			byte buffer[] = msg.getBytes();
 			outputStream.write(buffer);
 
-		} catch (IOException e) {
-			throw new CommunicationException("Could not write to client output buffer", e);
+        } catch (IOException e) {
+            throw new CommunicationException("Could not write to client output buffer", e);
 		}
 	}
 
     /**
-     * @see Consumer#host(int)
+     * @see Consumer#host(int, InetAddress)
      */
 	@Override
-	public void host(int hostPort) throws CommunicationException {
+	public void host(int hostPort, InetAddress ip) throws CommunicationException {
 		// Check that the socket is not already open
 		if (server != null && !server.isClosed()) {
 			throw new CommunicationException("Socket was not closed before trying to host!");
@@ -135,7 +189,7 @@ public class Controller implements Producer, Consumer {
 		
 		// Start the server and create the input socket
 		try {
-			server = new ServerSocket(hostPort);
+			server = new ServerSocket(hostPort, 50, ip);
 
 		} catch (IOException e) {
 			throw new CommunicationException("Could not open server socket or input stream", e);

@@ -4,7 +4,10 @@ import database.Database;
 import exception.CommunicationException;
 import exception.DatabaseException;
 import exception.ThresholdException;
+import sendable.Sendable;
 import sendable.alarm.Alarm;
+import sendable.alarm.DataCause;
+import sendable.alarm.PlayerCause;
 import sendable.data.Acceleration;
 import sendable.data.Position;
 
@@ -49,28 +52,47 @@ public class ControllerReceiver implements Runnable {
 
         while (true) {
             try {
-                int startingIndex = 0;
-                List<Position> positions = controller.receive(clientIn, Position.class);
+                List<Sendable> received = controller.receive(clientIn);
 
-                if (lastPosition == null) {
-                    lastPosition = positions.get(0);
-                    startingIndex = 1;
-                }
-
-                for (int i = startingIndex; i < positions.size(); i++) {
+                for (Sendable sendable : received) {
                     try {
-                        Acceleration acceleration = controller.calculate(lastPosition, positions.get(i));
-                        database.store(acceleration);
+                        database.store(sendable);
+
+                        if (sendable instanceof Position) {
+                            if (lastPosition == null) {
+                                lastPosition = (Position) sendable;
+                            } else {
+                                Acceleration acceleration = controller.calculate(lastPosition, (Position) sendable);
+                                database.store(acceleration);
+                            }
+
+                        }
+
                     } catch (ThresholdException e) {
                         LOG.info("Threshold exception detected: " + e.getLocalizedMessage());
+
                         database.store(e.getAcceleration());
-                        //Alarm alarm = new Alarm(e.getAcceleration().getUID(), )
+                        Alarm alarm = new Alarm(e.getAcceleration().getUID(), System.currentTimeMillis(),
+                                new DataCause((int) threshold));
+
+                        database.store(alarm);
+
+                        // TODO add the sending to the app
+
                     }
                 }
 
             } catch (CommunicationException e) {
                 LOG.severe("Error receiving message from sensor: " + e.getLocalizedMessage());
                 break;
+            }
+        }
+
+        if (!client.isClosed()) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                LOG.severe("Could not close client: " + e.getLocalizedMessage());
             }
         }
     }

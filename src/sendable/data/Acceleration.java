@@ -1,5 +1,6 @@
 package sendable.data;
 
+import sendable.DataType;
 import sendable.Sendable;
 
 import javax.persistence.*;
@@ -19,29 +20,31 @@ import java.util.Date;
 @Entity
 @Table(name = "ACCELDATA")
 public class Acceleration implements Sendable {
+    private final int type;
 	private int tableID;
     private int uid;
-    private Date time;
+    private long time;
     private int xAccel;
     private int yAccel;
     private int zAccel;
     private int accelMag;
 
     public Acceleration() {
-        this(0, new Date(), 0, 0, 0, 0);
+        this(0, 0, 0, 0, 0, 0);
     }
 
-    public Acceleration(int uid, Date time, int xAccel, int yAccel, int zAccel, double accelMag) {
+    public Acceleration(int uid, long time, int xAccel, int yAccel, int zAccel, double accelMag) {
         this(uid, time, xAccel, yAccel, zAccel, (int) accelMag);
     }
 
-    public Acceleration(int uid, Date time, int xAccel, int yAccel, int zAccel, int accelMag) {
+    public Acceleration(int uid, long time, int xAccel, int yAccel, int zAccel, int accelMag) {
         this.uid = uid;
         this.time = time;
         this.xAccel = xAccel;
         this.yAccel = yAccel;
         this.zAccel = zAccel;
         this.accelMag = accelMag;
+        this.type =  DataType.ACCEL;
     }
 
     @Column(name = "X_ACCEL", nullable = false)
@@ -81,12 +84,17 @@ public class Acceleration implements Sendable {
     }
 
     @Override
+    public int getType() {
+        return type;
+    }
+
+    @Override
     public void setUID(int uid) {
         this.uid = uid;
     }
 
     @Override
-    public void setTime(Date time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -97,10 +105,14 @@ public class Acceleration implements Sendable {
     }
 
     @Override
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "TIME", nullable = false)
-    public Date getTime() {
+    public long getTime() {
         return time;
+    }
+
+    @Override
+    public Date getDate() {
+        return new Date(time);
     }
 
     @Id
@@ -126,14 +138,14 @@ public class Acceleration implements Sendable {
                yAccel == acceleration.getyAccel() &&
                zAccel == acceleration.getzAccel() &&
                accelMag == acceleration.getAccelMag() &&
-               time != null ? time.equals(acceleration.getTime()) : acceleration.getTime() == null;
+               time == acceleration.getTime();
     }
 
     @Override
     public int hashCode() {
         int result = 11;
         result = 37 * result + uid;
-        result = 37 * result + (time != null ? time.hashCode() : 0);
+        result = 37 * result + Long.valueOf(time).hashCode();
         result = 37 * result + xAccel;
         result = 37 * result + yAccel;
         result = 37 * result + zAccel;

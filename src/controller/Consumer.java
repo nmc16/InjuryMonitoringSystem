@@ -4,6 +4,7 @@ import exception.CommunicationException;
 import sendable.Sendable;
 
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -23,18 +24,17 @@ public interface Consumer {
      * @param hostPort Port number to connect the host on
      * @throws CommunicationException Thrown if could not connect server socket to host port
      */
-	void host(int hostPort) throws CommunicationException;
+	void host(int hostPort, InetAddress ip) throws CommunicationException;
 
     /**
      * Receives all classes that exist on the buffer and attempts to parse the JSON
      * strings into the class type passed.
      *
-     * @param sendable Sendable class type to parse JSON to
-     * @param <T> Class type of the list that implements the {@link Sendable} interface
+     * @param inputStream Input stream object from the client socket to read from
      * @return Returns a list containing the objects on the buffer
      * @throws CommunicationException Thrown if could not read the input buffer
      */
-	<T extends Sendable> List<T> receive(InputStream inputStream, Class<T> sendable) throws CommunicationException;
+    List<Sendable> receive(InputStream inputStream) throws CommunicationException;
 
     /**
      * Attempts to disconnect the host server socket and close the input stream attached
