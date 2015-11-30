@@ -11,14 +11,13 @@ import com.pi4j.device.piface.impl.PiFaceDevice;
 import com.pi4j.wiringpi.Spi;
 
 public class PiSystem {
-	// global variables
 	private static PiFace piFace;
 	private static final int onTime =125;
-	// contructor initializing variable
+
 	public PiSystem() throws IOException {
 		piFace = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
 	}
-	// button handler that runs until button is pressed
+
 	public void setUpButtonHandler() {
 		piFace.getLed(PiFaceLed.LED0).blink(500);
 		piFace.getLed(PiFaceLed.LED1).blink(500);
@@ -28,7 +27,7 @@ public class PiSystem {
 		piFace.getLed(PiFaceLed.LED5).blink(500);
 		piFace.getLed(PiFaceLed.LED6).blink(500);
 		piFace.getLed(PiFaceLed.LED7).blink(500);
-		// button that gets built inside the method
+
 		piFace.getSwitch(PiFaceSwitch.S1).addListener(new SwitchListener() {
 			@Override
 			public void onStateChange(SwitchStateChangeEvent event) {
@@ -54,7 +53,7 @@ public class PiSystem {
 			}
 		});	
 	}
-	// main that runs the code
+
 	public static void main(String args[]) throws InterruptedException, IOException {
 		PiSystem emergency = new PiSystem();
 		emergency.setUpButtonHandler();

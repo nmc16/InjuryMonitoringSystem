@@ -19,12 +19,12 @@ import java.util.Date;
 public class Alarm implements Sendable {
     private int tableID;
     private int uid;
-    private Date time;
+    private long time;
     private Cause cause;
 
     public Alarm() {}
 
-    public Alarm(int uid, Date time, Cause cause) {
+    public Alarm(int uid, long time, Cause cause) {
         this.uid = uid;
         this.time = time;
         this.cause = cause;
@@ -57,7 +57,7 @@ public class Alarm implements Sendable {
     }
 
     @Override
-    public void setTime(Date time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -68,10 +68,14 @@ public class Alarm implements Sendable {
     }
 
     @Override
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "TIME", nullable = false)
-    public Date getTime() {
+    public long getTime() {
         return time;
+    }
+
+    @Override
+    public Date getDate() {
+        return new Date(time);
     }
 
     @Override
@@ -82,7 +86,7 @@ public class Alarm implements Sendable {
         Alarm alarm = (Alarm) o;
 
         return uid == alarm.getUID() &&
-               time != null ? time.equals(alarm.getTime()) : alarm.getTime() == null &&
+               time == alarm.getTime() &&
                cause != null ? cause.equals(alarm.getCause()) : alarm.getCause() == null;
 
     }
@@ -90,7 +94,7 @@ public class Alarm implements Sendable {
     @Override
     public int hashCode() {
         int result = uid;
-        result = 37 * result + (time != null ? time.hashCode() : 0);
+        result = 37 * result + Long.valueOf(time).hashCode();
         result = 37 * result + (cause != null ? cause.hashCode() : 0);
         return result;
     }
