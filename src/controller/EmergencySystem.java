@@ -10,7 +10,7 @@ import com.pi4j.device.piface.PiFaceSwitch;
 import com.pi4j.device.piface.impl.PiFaceDevice;
 import com.pi4j.wiringpi.Spi;
 
-public class EmergencySystem {
+public class EmergencySystem implements Consumer {
 	// creates global variables
 	private static PiFace piFace;
 	private static final int onTime =125;
@@ -18,6 +18,23 @@ public class EmergencySystem {
 	public EmergencySystem() throws IOException {
 		piFace = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
 	}
+
+	public void host(int hostPort, InetAddress ip) throws CommunicationException {
+		
+	}
+
+	public Socket acceptClient() throws CommunicationException {
+		
+	}
+
+	public List<Sendable> receive(Socket clientSocket) throws CommunicationException {
+		
+	}
+
+	public void disconnectHost() throws CommunicationException {
+		
+	}
+
 	// button handler to initialize the lights to start blinking and when button is pressed turn off
 	public void setUpButtonHandler() {
 		piFace.getLed(PiFaceLed.LED0).blink(500);

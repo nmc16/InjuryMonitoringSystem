@@ -63,7 +63,7 @@ public class ControllerRunner {
         InetAddress ip;
 
         try {
-            ip = InetAddress.getByAddress(args[2].getBytes());
+            ip = InetAddress.getByName(args[2]);
             ControllerRunner controllerRunner = new ControllerRunner(threshold, hostPort, ip);
             controllerRunner.run();
 
