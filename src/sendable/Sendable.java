@@ -10,6 +10,9 @@ import java.util.Date;
  */
 public interface Sendable {
 
+
+    int getType();
+
     /**
      * Set the unique identifier of the sendable object. Should be the
      * identifier of the PI/Host that the data is being sent from

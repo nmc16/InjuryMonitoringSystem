@@ -1,25 +1,25 @@
 package test;
 
 import controller.Controller;
+import controller.ControllerRunner;
+import sendable.DataType;
+import sendable.Sendable;
+import sendable.alarm.Alarm;
+import sendable.alarm.PlayerCause;
 import sendable.data.Acceleration;
 import sendable.data.Position;
 import exception.ThresholdException;
 import org.junit.*;
+import sendable.data.Request;
+import sendable.data.Service;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.net.Socket;
+import java.util.*;
+
 
 import static java.lang.Math.pow;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Test cases to test the functionality of the Database Controller.
@@ -88,50 +88,60 @@ public class ControllerTest {
     @Test
     public void testSendAndReceive() throws Exception {
 
-        ExecutorService pool = Executors.newCachedThreadPool();
+        // Run the main controller
+        ControllerRunner controllerRunner = new ControllerRunner(10, 9090, InetAddress.getLocalHost());
+        controllerRunner.run();
+        System.out.println("Controller running");
 
-        Future<List<Acceleration>> host = pool.submit(new Callable<List<Acceleration>>() {
-            @Override
-            public List<Acceleration> call() throws Exception {
-                Controller controller = new Controller(10);
-                controller.host(9090);
+        Random random  = new Random();
+        int player = random.nextInt();
 
-                Thread.sleep(1000);
-                List<Acceleration> a = controller.receive(Acceleration.class);
-                controller.disconnectHost();
+        // Connect a new controller and send test alarm
+        Controller controller = new Controller(10);
+        Socket connection1 = controller.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
+        Alarm alarm = new Alarm(player, System.currentTimeMillis(), new PlayerCause(player));
+        controller.send(alarm, connection1);
 
-                return a;
+        Controller controller2 = new Controller(10);
+        Socket connection2 = controller2.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
+        long alarmtime = System.currentTimeMillis() + 500;
+        Position position1 = new Position(player, System.currentTimeMillis(), 1, 2, 3);
+        Position position2 = new Position(player, alarmtime, 100, 200, 300);
+        controller2.send(position1, connection2);
+        controller2.send(position2, connection2);
+        controller2.send(new Request(player, DataType.ACCEL, -1, -1), connection2);
+        controller2.send(new Request(player, DataType.POS, -1, -1), connection2);
+
+        Thread.sleep(15000);
+        List<Sendable> received = controller2.receive(connection2);
+        List<Alarm> alarms = new ArrayList<Alarm>();
+        List<Acceleration> accelerations = new ArrayList<Acceleration>();
+        List<Position> positions = new ArrayList<Position>();
+
+        // Distribute the sendable objects
+        for (Sendable sendable : received) {
+            if (sendable instanceof Alarm) {
+                alarms.add((Alarm) sendable);
+
+            } else if (sendable instanceof Service) {
+               Service service = (Service) sendable;
+               List<?> data = service.getData();
+               for (Object o : data) {
+                   if (o instanceof Acceleration) {
+                       accelerations.add((Acceleration) o);
+                   } else if (o instanceof Position) {
+                       positions.add((Position) o);
+                   }
+               }
             }
-        });
+        }
 
-        Future<List<Acceleration>> producer = pool.submit(new Callable<List<Acceleration>>() {
-            @Override
-            public List<Acceleration> call() throws Exception {
-                Controller controller = new Controller(10);
+        controller.disconnectFromClient(connection1);
+        controller2.disconnectFromClient(connection2);
 
-                Thread.sleep(500);
-                controller.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
-
-                Acceleration a1 = new Acceleration(10, t1, 0, 0, 0, 0);
-                Acceleration a2 = new Acceleration(11, t2, 0, 0, 0, 0);
-                List<Acceleration> accelerations = new ArrayList<Acceleration>();
-                accelerations.add(a1);
-                accelerations.add(a2);
-
-                controller.send(a1);
-                controller.send(a2);
-                controller.disconnectFromClient();
-
-                return accelerations;
-            }
-        });
-
-        List<Acceleration> hostList = host.get();
-        List<Acceleration> producerList = producer.get();
-
-        assertEquals("Host list not expected size", 2, hostList.size());
-        assertEquals("Producer list not expected size", 2, producerList.size());
-        assertEquals("First acceleration was not the same!", hostList.get(0), producerList.get(0));
-        assertEquals("Second acceleration was not the same!", hostList.get(1), producerList.get(1));
+        assertTrue("Alarm was not sent from controller", alarms.size() >= 1);
+        assertTrue("Acceleration not received from controller", accelerations.size() >= 1);
+        assertTrue("Position 1 not contained in received positions", positions.contains(position1));
+        assertTrue("Position 2 not contained in received positions", positions.contains(position2));
     }
 }
