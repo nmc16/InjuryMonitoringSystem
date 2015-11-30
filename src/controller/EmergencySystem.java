@@ -36,7 +36,6 @@ public class EmergencySystem {
 				if(event.getNewState() == SwitchState.ON) {
 					piFace.getLed(PiFaceLed.LED0).blink(0);
 					piFace.getLed(PiFaceLed.LED0).off();
-					//piFace.getRelay(PiFaceRelay.K0).open();
 					piFace.getLed(PiFaceLed.LED1).blink(0);
 					piFace.getLed(PiFaceLed.LED1).off();
 					piFace.getLed(PiFaceLed.LED2).blink(0);
