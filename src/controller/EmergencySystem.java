@@ -15,7 +15,7 @@ public class EmergencySystem {
 	private static PiFace piFace;
 	private static final int onTime =125;
 	// constructor to intialize variable
-	public PiSystem() throws IOException {
+	public EmergencySystem() throws IOException {
 		piFace = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
 	}
 	// button handler to initialize the lights to start blinking and when button is pressed turn off
