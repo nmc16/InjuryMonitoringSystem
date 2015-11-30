@@ -1,5 +1,6 @@
 package sendable.data;
 
+import sendable.DataType;
 import sendable.Sendable;
 
 import javax.persistence.*;
@@ -19,6 +20,7 @@ import java.util.Date;
 @Entity
 @Table(name = "ACCELDATA")
 public class Acceleration implements Sendable {
+    private final int type;
 	private int tableID;
     private int uid;
     private long time;
@@ -42,6 +44,7 @@ public class Acceleration implements Sendable {
         this.yAccel = yAccel;
         this.zAccel = zAccel;
         this.accelMag = accelMag;
+        this.type =  DataType.ACCEL;
     }
 
     @Column(name = "X_ACCEL", nullable = false)
@@ -78,6 +81,11 @@ public class Acceleration implements Sendable {
 
     public void setAccelMag(int accelMag) {
         this.accelMag = accelMag;
+    }
+
+    @Override
+    public int getType() {
+        return type;
     }
 
     @Override

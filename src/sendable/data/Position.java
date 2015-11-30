@@ -1,5 +1,6 @@
 package sendable.data;
 
+import sendable.DataType;
 import sendable.Sendable;
 
 import javax.persistence.*;
@@ -14,6 +15,7 @@ import java.util.Date;
 @Entity
 @Table(name = "POSDATA")
 public class Position implements Sendable {
+    private final int type;
     private int tableID;
     private int uid;
     private long time;
@@ -31,6 +33,7 @@ public class Position implements Sendable {
         this.xPos = xPos;
         this.yPos = yPos;
         this.zPos = zPos;
+        this.type = DataType.POS;
     }
 
     @Column(name = "X_POS", nullable = false)
@@ -58,6 +61,11 @@ public class Position implements Sendable {
 
     public void setzPos(int zPos) {
         this.zPos = zPos;
+    }
+
+    @Override
+    public int getType() {
+        return type;
     }
 
     @Override

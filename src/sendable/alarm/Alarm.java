@@ -1,5 +1,6 @@
 package sendable.alarm;
 
+import sendable.DataType;
 import sendable.Sendable;
 
 import javax.persistence.*;
@@ -17,14 +18,18 @@ import java.util.Date;
 @Entity
 @Table(name = "ALARMDATA")
 public class Alarm implements Sendable {
+    private final int type;
     private int tableID;
     private int uid;
     private long time;
     private Cause cause;
 
-    public Alarm() {}
+    public Alarm() {
+        this.type = DataType.ALARM;
+    }
 
     public Alarm(int uid, long time, Cause cause) {
+        this();
         this.uid = uid;
         this.time = time;
         this.cause = cause;
@@ -49,6 +54,11 @@ public class Alarm implements Sendable {
 
     public void setCause(Cause cause) {
         this.cause = cause;
+    }
+
+    @Override
+    public int getType() {
+        return type;
     }
 
     @Override
