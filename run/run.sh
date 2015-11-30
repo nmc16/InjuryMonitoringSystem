@@ -4,7 +4,7 @@ BASEDIR=`pwd`
 ROOT=${BASEDIR}/../
 TARGET=${ROOT}/target
 DEPENDENCIES=${ROOT}/dependencies
-CP="${ROOT}/src:${DEPENDENCIES}/eclipselink-2.6.1.jar:${DEPENDENCIES}/javax.persistence_2.1.0.jar:${DEPENDENCIES}/hamcrest-core-1.3.jar:${DEPENDENCIES}/junit-4.12.jar:${DEPENDENCIES}/db-derby-10.12.1.1-bin/lib/derby.jar:${ROOT}/src/META-INF"
+CP="${ROOT}/src:${DEPENDENCIES}/pi4j-1.0/lib/*:${DEPENDENCIES}/eclipselink-2.6.1.jar:${DEPENDENCIES}/javax.persistence_2.1.0.jar:${DEPENDENCIES}/hamcrest-core-1.3.jar:${DEPENDENCIES}/junit-4.12.jar:${DEPENDENCIES}/db-derby-10.12.1.1-bin/lib/derby.jar:${ROOT}/src/META-INF"
 
 compile() {
     # Check that the target directory has been made
