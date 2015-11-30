@@ -32,19 +32,25 @@ import java.util.Scanner;
  * 
  */
 public class player implements Producer {
+	
+	// holder variables for sensing function
+	private static String clientIP; 
+	private static int clientPort; 
+	
+	
+	
 	// here holder variables initialized 
 	private static double playerID; 
 	private static double Xcoord;
 	private static double Ycoord;
 	private static double Zcoord; 
 	
-	// These variables are to send to the controller 
-	private ServerSocket server;
-	private Socket clientSocket;
-	private Socket inputSocket;
-	private Gson gson = new Gson();	
-	private static final int BUFFER_SIZE = 65536;
+	private static int uid=1; 
 	
+	// These variables are to send to the controller 
+	private Socket clientSocket;
+	private Gson gson = new Gson();	
+
 	private static Position position;
 	
 	private OutputStream outputStream;
@@ -64,17 +70,12 @@ public class player implements Producer {
 	
 	
 	public static void main(String args[]) throws InterruptedException, IOException {	
-		System.out.println("please enter Player id");
-		playerID = in.nextInt();
 		
+		setup();
 	
 		
 		
 		System.out.println("starting the accelleromenter");
-
-		 	       
-	       
-		
 
 		// create custom ADS1015 GPIO provider
 	    final ADS1015GpioProvider gpioProvider = new ADS1015GpioProvider(I2CBus.BUS_1, ADS1015GpioProvider.ADS1015_ADDRESS_0x48);
@@ -136,18 +137,20 @@ public class player implements Producer {
 	    			 
 	    			Zcoord = voltage;
 	    			 
-	    		}
+	    		}  
 	    		 
 	    		
 	    		
-	    		
+	    		// I use this code to create a position variable to send 
 	    		
 	    		System.out.println("Made it past print");
-	    		//position.setxPos((int)Xcoord);
-	    		//position.setyPos((int)Ycoord);
-	    		//position.setzPos((int)Xcoord);
+	    		position= new Position(uid,System.currentTimeMillis(),(int)Xcoord,(int)Ycoord,(int)Zcoord);
 	    		
-			System.out.println(" the X value is " + Xcoord);
+	    		
+	    		
+	    		
+	    				
+	    		System.out.println(" the X value is " + Xcoord);
 	    		System.out.println(" the Y value is " + Ycoord);
 	    		System.out.println(" the Z value is " + Zcoord);
 	    	 
@@ -166,12 +169,34 @@ public class player implements Producer {
         for (int count = 0; count < 600; count++) {
 
             // display output
-            //System.out.print("\r ANALOG VALUE (FOR INPUT A0) : VOLTS=" + df.format(voltage) + "  | PERCENT=" + pdf.format(percent) + "% | RAW=" + value + "       ");
             Thread.sleep(1000);
         }
 	    
 	    shutdownGPIO();
 	        
+		
+		
+	}
+	
+	public static void setup(){
+		// Take in the the player UID number 
+		System.out.println("please enter Player UID");
+		playerID = in.nextInt();
+		
+		System.out.println("the Players ID is: "+ playerID);
+		
+		// Take in the location of the database / controller 
+		System.out.println("\n please enter the IP of the Data base 10.0.0.X "); 
+		clientIP="10.0.0."+ in.next();
+		System.out.println("\n The IP of the client is:" +clientIP );
+		
+		System.out.println("\n please enter the clients port number ");
+		clientPort = in.nextInt();
+		System.out.println("The clients port number is: ");
+		
+		//use connect to 
+	
+		
 		
 		
 	}
@@ -194,61 +219,16 @@ public class player implements Producer {
 	// nics code for sending data between devices 
 	
 	
-	
-    /**
-     * @see Producer#connectTo(String, int)
+
+    
+	 /**
+     * @see Producer#disconnectFromClient(Socket)
      */
 	@Override
-	public void connectTo(String clientIP, int clientPort) throws CommunicationException {
-        // Check that the socket is not already open
-		if (clientSocket != null && !clientSocket.isClosed()) {
-			throw new CommunicationException("Client socket not closed before operation!");
-		}
-		
-		try {
-            // Open the client and save the output stream to write to
-			clientSocket = new Socket(clientIP, clientPort);
-            outputStream = clientSocket.getOutputStream();
-
-		} catch (IOException e) {
-			throw new CommunicationException("Could not set up client socket", e);
-		}
-	}
-
-
-    /**
-     * @see Producer#send(Sendable)
-     */
-    @Override
-	public void send(Sendable sendable) throws CommunicationException {
-        // Check that there is a client to write to
-        if (clientSocket == null || clientSocket.isClosed()) {
-            throw new CommunicationException("Client socket not open to write to! Check that you have called" +
-                                             "connectTo() method.");
-        }
-
-        // Convert the object to its JSON representation
-		String msg = gson.toJson(sendable, sendable.getClass());
-		try {
-            // Convert to byte array and write to the socket
-			byte buffer[] = msg.getBytes();
-			outputStream.write(buffer);
-
-        } catch (IOException e) {
-            throw new CommunicationException("Could not write to client output buffer", e);
-		}
-	}
-    
-    
-    
-    /**
-     * @see Producer#disconnectFromClient()
-     */
-	@Override
-	public void disconnectFromClient() throws CommunicationException {
+	public void disconnectFromClient(Socket clientSocket) throws CommunicationException {
 		try {
             // Close the output stream, should also close socket
-            outputStream.close();
+            clientSocket.getOutputStream().close();
 
             // If the socket was not closed then close it
             if (!clientSocket.isClosed()) {
@@ -259,6 +239,48 @@ public class player implements Producer {
             throw new CommunicationException("Could not close the client connection", e);
         }
 	}
+
+	/**
+     * @see Producer#connectTo(String, int)
+     */
+	@Override
+	public Socket connectTo(String clientIP, int clientPort) throws CommunicationException {
+		
+		try {
+            // Open the client and save the output stream to write to
+			return new Socket(clientIP, clientPort);
+
+		} catch (IOException e) {
+			throw new CommunicationException("Could not set up client socket", e);
+		}
+	}
+
+
+
+	/**
+     * @see Producer#send(Sendable, Socket)
+     */
+    @Override
+	public void send(Sendable sendable, Socket client) throws CommunicationException {
+        // Check that there is a client to write to
+        if (client == null || client.isClosed()) {
+            throw new CommunicationException("Client socket not open to write to! Check that you have called" +
+                                             "connectTo() method.");
+        }
+
+        // Convert the object to its JSON representation
+		String msg = gson.toJson(sendable, sendable.getClass());
+		try {
+            // Convert to byte array and write to the socket
+			byte buffer[] = msg.getBytes();
+			client.getOutputStream().write(buffer);
+
+        } catch (IOException e) {
+            throw new CommunicationException("Could not write to client output buffer", e);
+		}
+	}
+
+
 	
 	
 }
