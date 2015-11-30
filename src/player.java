@@ -93,7 +93,7 @@ public class player implements Producer {
 	     
 	    // Define a threshold value for each pin for analog value change events to be raised.
 	    // It is important to set this threshold high enough so that you don't overwhelm your program with change events for insignificant changes
-	    gpioProvider.setEventThreshold(500, ADS1015Pin.ALL);
+	    gpioProvider.setEventThreshold(150, ADS1015Pin.ALL);
 	     
 	    // Define the monitoring thread refresh interval (in milliseconds).
 	    // This governs the rate at which the monitoring thread will read input values from the ADC chip
