@@ -113,7 +113,7 @@ public class ControllerTest {
         controller2.send(new Request(player, DataType.POS, -1, -1), connection2);
 
         Thread.sleep(15000);
-        List<Sendable> received = controller2.receive(connection2.getInputStream());
+        List<Sendable> received = controller2.receive(connection2);
         List<Alarm> alarms = new ArrayList<Alarm>();
         List<Acceleration> accelerations = new ArrayList<Acceleration>();
         List<Position> positions = new ArrayList<Position>();
@@ -136,8 +136,8 @@ public class ControllerTest {
             }
         }
 
-        controller.disconnectFromClient();
-        controller2.disconnectFromClient();
+        controller.disconnectFromClient(connection1);
+        controller2.disconnectFromClient(connection2);
 
         assertTrue("Alarm was not sent from controller", alarms.size() >= 1);
         assertTrue("Acceleration not received from controller", accelerations.size() >= 1);

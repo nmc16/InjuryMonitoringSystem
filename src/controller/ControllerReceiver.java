@@ -107,12 +107,8 @@ public class ControllerReceiver implements Runnable {
         try {
             database.connect();
             database.init();
-            clientIn = client.getInputStream();
         } catch (DatabaseException e) {
             LOG.severe("Could not start database: " + e.getLocalizedMessage());
-            return;
-        } catch (IOException e) {
-            LOG.severe("Could not get input stream from client: " + e.getLocalizedMessage());
             return;
         }
 
@@ -121,7 +117,7 @@ public class ControllerReceiver implements Runnable {
 
         while (true) {
             try {
-                List<Sendable> received = controller.receive(clientIn);
+                List<Sendable> received = controller.receive(client);
 
                 for (Sendable sendable : received) {
                     decode(sendable);

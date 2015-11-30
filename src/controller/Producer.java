@@ -22,6 +22,7 @@ public interface Producer {
      *
      * @param clientIP String representing the IP address to connect to
      * @param clientPort Client port to connect socket to
+     * @return Socket connection to the target system
      * @throws CommunicationException Thrown on error connecting socket
      */
 	Socket connectTo(String clientIP, int clientPort) throws CommunicationException;
@@ -41,5 +42,5 @@ public interface Producer {
      *
      * @throws CommunicationException Thrown if there is an error closing the socket or output stream
      */
-	void disconnectFromClient() throws CommunicationException;
+	void disconnectFromClient(Socket clientSocket) throws CommunicationException;
 }

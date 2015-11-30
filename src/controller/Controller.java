@@ -2,9 +2,7 @@ package controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,19 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 import exception.CommunicationException;
-import sendable.DataType;
 import sendable.Sendable;
-import sendable.alarm.*;
 import sendable.data.Acceleration;
 import exception.ThresholdException;
 import sendable.data.Position;
+import json.SendableDeserializer;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import sendable.data.Request;
-import sendable.data.Service;
 
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
@@ -38,81 +32,9 @@ public class Controller implements Producer, Consumer {
 
     private static final int BUFFER_SIZE = 65536;
     private Gson gson;
-    private OutputStream outputStream;
     private double threshold;
     private ServerSocket server;
-    private Socket clientSocket;
-
-
-    private class ServiceDeserializer implements JsonDeserializer<Service> {
-
-        @Override
-        public Service deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            Gson gson = new Gson();
-
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            int dataType = jsonObject.get("dataType").getAsInt();
-
-            if (dataType == DataType.ACCEL) {
-                Type t = new TypeToken<Service<Acceleration>>(){}.getType();
-                return gson.fromJson(jsonElement, t);
-            } else if (dataType == DataType.POS) {
-                Type t = new TypeToken<Service<Position>>(){}.getType();
-                return gson.fromJson(jsonElement, t);
-            } else if (dataType == DataType.ALARM) {
-                Type t = new TypeToken<Service<Alarm>>(){}.getType();
-                return gson.fromJson(jsonElement, t);
-            } else {
-                throw new JsonParseException("Could not find object where data type is " + dataType);
-            }
-        }
-    }
-
-    private class CauseDeserializer implements JsonDeserializer<Cause> {
-
-        @Override
-        public Cause deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            Gson gson = new Gson();
-
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            int causeType = jsonObject.get("type").getAsInt();
-
-            if (causeType == DataType.CAUSE_DATA) {
-                return gson.fromJson(jsonElement, DataCause.class);
-            } else if (causeType == DataType.CAUSE_TRAINER) {
-                return gson.fromJson(jsonElement, TrainerCause.class);
-            } else if (causeType == DataType.CAUSE_PLAYER) {
-                return gson.fromJson(jsonElement, PlayerCause.class);
-            } else {
-                throw new JsonParseException("Could not find object where data type is " + causeType);
-            }
-        }
-    }
-    private class SendableDeserializer implements JsonDeserializer<Sendable> {
-
-        @Override
-        public Sendable deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            Gson gson = new GsonBuilder().registerTypeAdapter(Cause.class, new CauseDeserializer())
-                                         .registerTypeAdapter(Service.class, new ServiceDeserializer()).create();
-
-            JsonObject jsonObject = jsonElement.getAsJsonObject();
-            int dataType = jsonObject.get("type").getAsInt();
-
-            if (dataType == DataType.POS) {
-                return gson.fromJson(jsonElement, Position.class);
-            } else if (dataType == DataType.ACCEL) {
-                return gson.fromJson(jsonElement, Acceleration.class);
-            } else if (dataType == DataType.ALARM) {
-                return gson.fromJson(jsonElement, Alarm.class);
-            } else if (dataType == DataType.REQUEST) {
-                return gson.fromJson(jsonElement, Request.class);
-            } else if (dataType == DataType.SERVICE) {
-                return gson.fromJson(jsonElement, Service.class);
-            } else {
-                throw new JsonParseException("Could not find object where data type is " + dataType);
-            }
-        }
-    }
+    
     public Controller(double threshold) {
         this.threshold = threshold;
         gson = new GsonBuilder().registerTypeAdapter(Sendable.class, new SendableDeserializer()).create();
@@ -154,8 +76,11 @@ public class Controller implements Producer, Consumer {
      * @see Consumer#receive(InputStream)
      */
 	@Override
-	public List<Sendable> receive(InputStream inputStream) throws CommunicationException {
+	public List<Sendable> receive(Socket clientSocket) throws CommunicationException {
 		try {
+			// Get the input stream from the socket
+			InputStream inputStream = clientSocket.getInputStream();
+			
             // Write the bytes on the socket buffer until the EOF is reached
 			byte buffer[] = new byte[BUFFER_SIZE];
 			while (true) {
@@ -168,7 +93,7 @@ public class Controller implements Producer, Consumer {
             String msg = new String(buffer);
             msg = msg.replace("\u0000", "").replace("\\u0000", "");
 
-            // Create json reader to read the separate objects from the string
+            // Create JSON reader to read the separate objects from the string
             JsonReader jsonReader = new JsonReader(new StringReader(msg));
             jsonReader.setLenient(true);
 
@@ -229,6 +154,10 @@ public class Controller implements Producer, Consumer {
 		}
 	}
 
+	/**
+	 * @see Consumer#acceptClient()
+	 */
+	@Override
     public Socket acceptClient() throws CommunicationException {
         // Check that the socket is not already open
         if (server == null || server.isClosed()) {
@@ -262,16 +191,10 @@ public class Controller implements Producer, Consumer {
      */
 	@Override
 	public Socket connectTo(String clientIP, int clientPort) throws CommunicationException {
-        // Check that the socket is not already open
-		if (clientSocket != null && !clientSocket.isClosed()) {
-			throw new CommunicationException("Client socket not closed before operation!");
-		}
 		
 		try {
             // Open the client and save the output stream to write to
-			clientSocket = new Socket(clientIP, clientPort);
-            outputStream = clientSocket.getOutputStream();
-            return clientSocket;
+			return new Socket(clientIP, clientPort);
 
 		} catch (IOException e) {
 			throw new CommunicationException("Could not set up client socket", e);
@@ -279,13 +202,13 @@ public class Controller implements Producer, Consumer {
 	}
 
     /**
-     * @see Producer#disconnectFromClient()
+     * @see Producer#disconnectFromClient(Socket)
      */
 	@Override
-	public void disconnectFromClient() throws CommunicationException {
+	public void disconnectFromClient(Socket clientSocket) throws CommunicationException {
 		try {
             // Close the output stream, should also close socket
-            outputStream.close();
+            clientSocket.getOutputStream().close();
 
             // If the socket was not closed then close it
             if (!clientSocket.isClosed()) {
