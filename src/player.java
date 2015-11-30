@@ -98,7 +98,7 @@ public class player implements Producer {
 	    // Define the monitoring thread refresh interval (in milliseconds).
 	    // This governs the rate at which the monitoring thread will read input values from the ADC chip
 	    // (a value less than 50 ms is not permitted)
-	    gpioProvider.setMonitorInterval(100);
+	    gpioProvider.setMonitorInterval(050);
 	     
 	     
 	     
@@ -139,23 +139,21 @@ public class player implements Producer {
 	    		}
 	    		 
 	    		
-	    		position.setxPos((int)Xcoord);
-	    		position.setyPos((int)Ycoord);
-	    		position.setzPos((int)Xcoord);
-	    		
-	    		printf(" the X value is" + Xcoord);
-	    		printf(" the Y value is" + Ycoord);
-	    		printf(" the Z value is" + Zcoord);
 	    		
 	    		
-	    		 
+	    		
+	    		System.out.println("Made it past print");
+	    		//position.setxPos((int)Xcoord);
+	    		//position.setyPos((int)Ycoord);
+	    		//position.setzPos((int)Xcoord);
+	    		
+			System.out.println(" the X value is " + Xcoord);
+	    		System.out.println(" the Y value is " + Ycoord);
+	    		System.out.println(" the Z value is " + Zcoord);
 	    	 
 	    	}
 
-			private void printf(String string) {
-				// TODO Auto-generated method stub
-				
-			}
+			
 	    };
 	     
 	    myInputs[0].addListener(listener);
@@ -163,10 +161,14 @@ public class player implements Producer {
 	    myInputs[2].addListener(listener);
 	    myInputs[3].addListener(listener);
 	    
-	    playing = true; 
-	    while(playing){
-	  	
-	    }
+	   
+        // keep program running for 10 minutes 
+        for (int count = 0; count < 600; count++) {
+
+            // display output
+            //System.out.print("\r ANALOG VALUE (FOR INPUT A0) : VOLTS=" + df.format(voltage) + "  | PERCENT=" + pdf.format(percent) + "% | RAW=" + value + "       ");
+            Thread.sleep(1000);
+        }
 	    
 	    shutdownGPIO();
 	        
