@@ -3,6 +3,8 @@ package controller;
 import exception.CommunicationException;
 import sendable.Sendable;
 
+import java.net.Socket;
+
 /**
  * Object that can produce objects to send over TCP sockets to a host
  * machine using JSON.
@@ -22,7 +24,7 @@ public interface Producer {
      * @param clientPort Client port to connect socket to
      * @throws CommunicationException Thrown on error connecting socket
      */
-	void connectTo(String clientIP, int clientPort) throws CommunicationException;
+	Socket connectTo(String clientIP, int clientPort) throws CommunicationException;
 
     /**
      * Sends a {@link Sendable} object using JSON over the client TCP socket created
@@ -31,7 +33,7 @@ public interface Producer {
      * @param sendable Sendable object to send over the socket
      * @throws CommunicationException Thrown if error writing to socket or if socket not open
      */
-	void send(Sendable sendable) throws CommunicationException;
+	void send(Sendable sendable, Socket client) throws CommunicationException;
 
     /**
      * Disconnects the socket from the client connection and closes the output stream

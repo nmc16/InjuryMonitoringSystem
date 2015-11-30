@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import exception.CommunicationException;
 import sendable.DataType;
 import sendable.Sendable;
@@ -22,6 +23,8 @@ import sendable.data.Position;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import sendable.data.Request;
+import sendable.data.Service;
 
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
@@ -39,6 +42,31 @@ public class Controller implements Producer, Consumer {
     private double threshold;
     private ServerSocket server;
     private Socket clientSocket;
+
+
+    private class ServiceDeserializer implements JsonDeserializer<Service> {
+
+        @Override
+        public Service deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            Gson gson = new Gson();
+
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            int dataType = jsonObject.get("dataType").getAsInt();
+
+            if (dataType == DataType.ACCEL) {
+                Type t = new TypeToken<Service<Acceleration>>(){}.getType();
+                return gson.fromJson(jsonElement, t);
+            } else if (dataType == DataType.POS) {
+                Type t = new TypeToken<Service<Position>>(){}.getType();
+                return gson.fromJson(jsonElement, t);
+            } else if (dataType == DataType.ALARM) {
+                Type t = new TypeToken<Service<Alarm>>(){}.getType();
+                return gson.fromJson(jsonElement, t);
+            } else {
+                throw new JsonParseException("Could not find object where data type is " + dataType);
+            }
+        }
+    }
 
     private class CauseDeserializer implements JsonDeserializer<Cause> {
 
@@ -64,7 +92,8 @@ public class Controller implements Producer, Consumer {
 
         @Override
         public Sendable deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-            Gson gson = new GsonBuilder().registerTypeAdapter(Cause.class, new CauseDeserializer()).create();
+            Gson gson = new GsonBuilder().registerTypeAdapter(Cause.class, new CauseDeserializer())
+                                         .registerTypeAdapter(Service.class, new ServiceDeserializer()).create();
 
             JsonObject jsonObject = jsonElement.getAsJsonObject();
             int dataType = jsonObject.get("type").getAsInt();
@@ -75,6 +104,10 @@ public class Controller implements Producer, Consumer {
                 return gson.fromJson(jsonElement, Acceleration.class);
             } else if (dataType == DataType.ALARM) {
                 return gson.fromJson(jsonElement, Alarm.class);
+            } else if (dataType == DataType.REQUEST) {
+                return gson.fromJson(jsonElement, Request.class);
+            } else if (dataType == DataType.SERVICE) {
+                return gson.fromJson(jsonElement, Service.class);
             } else {
                 throw new JsonParseException("Could not find object where data type is " + dataType);
             }
@@ -155,12 +188,12 @@ public class Controller implements Producer, Consumer {
 	}
 
     /**
-     * @see Producer#send(Sendable)
+     * @see Producer#send(Sendable, Socket)
      */
     @Override
-	public void send(Sendable sendable) throws CommunicationException {
+	public void send(Sendable sendable, Socket client) throws CommunicationException {
         // Check that there is a client to write to
-        if (clientSocket == null || clientSocket.isClosed()) {
+        if (client == null || client.isClosed()) {
             throw new CommunicationException("Client socket not open to write to! Check that you have called" +
                                              "connectTo() method.");
         }
@@ -170,7 +203,7 @@ public class Controller implements Producer, Consumer {
 		try {
             // Convert to byte array and write to the socket
 			byte buffer[] = msg.getBytes();
-			outputStream.write(buffer);
+			client.getOutputStream().write(buffer);
 
         } catch (IOException e) {
             throw new CommunicationException("Could not write to client output buffer", e);
@@ -228,7 +261,7 @@ public class Controller implements Producer, Consumer {
      * @see Producer#connectTo(String, int)
      */
 	@Override
-	public void connectTo(String clientIP, int clientPort) throws CommunicationException {
+	public Socket connectTo(String clientIP, int clientPort) throws CommunicationException {
         // Check that the socket is not already open
 		if (clientSocket != null && !clientSocket.isClosed()) {
 			throw new CommunicationException("Client socket not closed before operation!");
@@ -238,6 +271,7 @@ public class Controller implements Producer, Consumer {
             // Open the client and save the output stream to write to
 			clientSocket = new Socket(clientIP, clientPort);
             outputStream = clientSocket.getOutputStream();
+            return clientSocket;
 
 		} catch (IOException e) {
 			throw new CommunicationException("Could not set up client socket", e);

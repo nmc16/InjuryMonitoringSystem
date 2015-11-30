@@ -2,22 +2,21 @@ package test;
 
 import controller.Controller;
 import controller.ControllerRunner;
-import database.Database;
+import sendable.DataType;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
-import sendable.alarm.DataCause;
 import sendable.alarm.PlayerCause;
 import sendable.data.Acceleration;
 import sendable.data.Position;
 import exception.ThresholdException;
 import org.junit.*;
+import sendable.data.Request;
+import sendable.data.Service;
 
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+
 
 import static java.lang.Math.pow;
 import static org.junit.Assert.*;
@@ -94,36 +93,55 @@ public class ControllerTest {
         controllerRunner.run();
         System.out.println("Controller running");
 
-        // Connect a new instance of the database
-        Database database = new Database();
-        database.connect();
-
         Random random  = new Random();
         int player = random.nextInt();
 
         // Connect a new controller and send test alarm
         Controller controller = new Controller(10);
-        controller.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
+        Socket connection1 = controller.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
         Alarm alarm = new Alarm(player, System.currentTimeMillis(), new PlayerCause(player));
-        controller.send(alarm);
+        controller.send(alarm, connection1);
 
         Controller controller2 = new Controller(10);
-        controller2.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
+        Socket connection2 = controller2.connectTo(InetAddress.getLocalHost().getHostAddress(), 9090);
         long alarmtime = System.currentTimeMillis() + 500;
         Position position1 = new Position(player, System.currentTimeMillis(), 1, 2, 3);
         Position position2 = new Position(player, alarmtime, 100, 200, 300);
-        controller2.send(position1);
-        controller2.send(position2);
+        controller2.send(position1, connection2);
+        controller2.send(position2, connection2);
+        controller2.send(new Request(player, DataType.ACCEL, -1, -1), connection2);
+        controller2.send(new Request(player, DataType.POS, -1, -1), connection2);
+
+        Thread.sleep(15000);
+        List<Sendable> received = controller2.receive(connection2.getInputStream());
+        List<Alarm> alarms = new ArrayList<Alarm>();
+        List<Acceleration> accelerations = new ArrayList<Acceleration>();
+        List<Position> positions = new ArrayList<Position>();
+
+        // Distribute the sendable objects
+        for (Sendable sendable : received) {
+            if (sendable instanceof Alarm) {
+                alarms.add((Alarm) sendable);
+
+            } else if (sendable instanceof Service) {
+               Service service = (Service) sendable;
+               List<?> data = service.getData();
+               for (Object o : data) {
+                   if (o instanceof Acceleration) {
+                       accelerations.add((Acceleration) o);
+                   } else if (o instanceof Position) {
+                       positions.add((Position) o);
+                   }
+               }
+            }
+        }
 
         controller.disconnectFromClient();
         controller2.disconnectFromClient();
 
-        Thread.sleep(5000);
-
-        List<Acceleration> a = database.retrieve(Acceleration.class, player);
-        List<Position> p = database.retrieve(Position.class, player);
-        List<Alarm> alarms = database.retrieve(Alarm.class, player);
-
-        assertTrue("Alarms did not contain the sent alarm", alarms.contains(alarm));
+        assertTrue("Alarm was not sent from controller", alarms.size() >= 1);
+        assertTrue("Acceleration not received from controller", accelerations.size() >= 1);
+        assertTrue("Position 1 not contained in received positions", positions.contains(position1));
+        assertTrue("Position 2 not contained in received positions", positions.contains(position2));
     }
 }
