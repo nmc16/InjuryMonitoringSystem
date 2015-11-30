@@ -10,7 +10,7 @@ import com.pi4j.device.piface.PiFaceSwitch;
 import com.pi4j.device.piface.impl.PiFaceDevice;
 import com.pi4j.wiringpi.Spi;
 
-public class PiSystem {
+public class EmergencySystem {
 	// creates global variables
 	private static PiFace piFace;
 	private static final int onTime =125;
@@ -57,7 +57,7 @@ public class PiSystem {
 	}
 	// main method to run the code
 	public static void main(String args[]) throws InterruptedException, IOException {
-		PiSystem emergency = new PiSystem();
+		EmergencySystem emergency = new EmergencySystem();
 		emergency.setUpButtonHandler();
 	}
 
