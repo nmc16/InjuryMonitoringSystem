@@ -10,6 +10,7 @@ import javax.persistence.*;
  */
 @Entity
 public class Cause {
+    protected int type;
     private int tableID;
     protected String message;
 
@@ -21,6 +22,9 @@ public class Cause {
         this.message = message;
     }
 
+    public int getType() {
+        return type;
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "INDEX")
@@ -46,9 +50,9 @@ public class Cause {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        DataCause dataCause = (DataCause) o;
+        Cause cause = (Cause) o;
 
-        return message != null ? message.equals(dataCause.getMessage()) : dataCause.getMessage() == null;
+        return message != null ? message.equals(cause.getMessage()) : cause.getMessage() == null;
     }
 
     @Override

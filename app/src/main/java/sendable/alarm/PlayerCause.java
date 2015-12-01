@@ -1,5 +1,7 @@
 package sendable.alarm;
 
+import sendable.DataType;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -19,16 +21,18 @@ public class PlayerCause extends Cause {
 
     public PlayerCause() {
         super();
+        type = DataType.CAUSE_PLAYER;
     }
 
     public PlayerCause(int playerID) {
-        super();
+        this();
         this.playerID = playerID;
     }
 
     public PlayerCause(int playerID, String message) {
         super(message);
         this.playerID = playerID;
+        type = DataType.CAUSE_PLAYER;
     }
 
     @Column(name = "PLAYERID")

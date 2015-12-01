@@ -1,5 +1,7 @@
 package sendable.alarm;
 
+import sendable.DataType;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -19,16 +21,18 @@ public class DataCause extends Cause {
 
     public DataCause() {
         super();
+        type = DataType.CAUSE_DATA;
     }
 
     public DataCause(int threshold) {
-        super();
+        this();
         this.threshold = threshold;
     }
 
     public DataCause(int threshold, String message) {
         super(message);
         this.threshold = threshold;
+        type = DataType.CAUSE_DATA;
     }
 
     @Column(name = "THRESHOLD")

@@ -13,11 +13,13 @@ import android.widget.Toast;
 import android.app.Activity;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
+import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
 import java.util.Date;
 
 import sendable.alarm.Alarm;
 import sendable.alarm.PlayerCause;
+import sendable.data.Request;
 
 
 /**
@@ -44,6 +46,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         final Button warningInfo;
         final Button graph;
         final Button emerg;
+        final Button request;
 
         spinner= (Spinner) findViewById((R.id.spinner));
 
@@ -55,6 +58,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         graph = (Button) findViewById(R.id.graph);
         warningInfo = (Button) findViewById(R.id.prevWarn);
         emerg = (Button) findViewById(R.id.emerg);
+        request = (Button) findViewById(R.id.requestButton);
 
         //when the graph button is pressed, switch content view to to the graph activity
         graph.setOnClickListener(new View.OnClickListener() {
@@ -80,10 +84,18 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             public void onClick(View view) {
                 Toast.makeText(getBaseContext(), "Emergency Pressed", Toast.LENGTH_SHORT).show();
                 AlertDialog alertDialog = new AlarmDialog(MainAppActivity.this).
-                        create(new Alarm(10, new Date(), new PlayerCause(10)));
+                        create(new Alarm(10, System.currentTimeMillis(), new PlayerCause(10)));
                 alertDialog.show();
             }
 
+        });
+        request.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RequestDialog requestDialog = new RequestDialog(MainAppActivity.this);
+                AlertDialog alertDialog = requestDialog.create();
+                alertDialog.show();
+            }
         });
     }
 
@@ -112,6 +124,10 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
+    }
+
+    public static void requestData(Request request) {
+        System.out.println(request.getDate() + " " + request.getStartTime() + " " + request.getEndTime() + " " + request.getUID());
     }
 
 }
