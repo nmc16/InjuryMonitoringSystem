@@ -6,7 +6,6 @@ derby*
 target/
 test/
 production/
-<<<<<<< HEAD
 
 .gradle
 /local.properties
@@ -16,6 +15,4 @@ production/
 /.idea/vcs.xml
 .DS_Store
 /build
-=======
 /bin/
->>>>>>> master
