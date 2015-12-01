@@ -13,7 +13,9 @@
         <item>Abbas</item>
     </string-array>
     <string name="title_activity_alarm_display">AlarmDisplay</string>
-    <string name = "alarm_dialog_title">Alarm Received!</string>
-    <string name = "alarm_dialog_dismiss">Dismiss</string>
-    <string name = "alarm_dialog_request">Request Emergency</string>
+    <string name="alarm_dialog_title">Alarm Received!</string>
+    <string name="alarm_dialog_dismiss">Dismiss</string>
+    <string name="alarm_dialog_request">Request Emergency</string>
+    <string name="request_dialog_title">Request Data</string>
+    <string name="request_dialog_msg">Enter the contraints for the data: </string>
 </resources>

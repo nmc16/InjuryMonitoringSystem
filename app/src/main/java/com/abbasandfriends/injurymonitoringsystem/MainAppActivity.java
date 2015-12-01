@@ -44,6 +44,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         final Button warningInfo;
         final Button graph;
         final Button emerg;
+        final Button request;
 
         spinner= (Spinner) findViewById((R.id.spinner));
 
@@ -55,6 +56,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         graph = (Button) findViewById(R.id.graph);
         warningInfo = (Button) findViewById(R.id.prevWarn);
         emerg = (Button) findViewById(R.id.emerg);
+        request = (Button) findViewById(R.id.requestButton);
 
         //when the graph button is pressed, switch content view to to the graph activity
         graph.setOnClickListener(new View.OnClickListener() {
@@ -84,6 +86,14 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
                 alertDialog.show();
             }
 
+        });
+        request.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RequestDialog requestDialog = new RequestDialog(MainAppActivity.this);
+                AlertDialog alertDialog = requestDialog.create();
+                alertDialog.show();
+            }
         });
     }
 
