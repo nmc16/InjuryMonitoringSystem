@@ -1,5 +1,7 @@
 package sendable.alarm;
 
+import sendable.DataType;
+
 import javax.persistence.*;
 
 /**
@@ -16,16 +18,18 @@ public class TrainerCause extends Cause {
 
     public TrainerCause() {
         super();
+        type = DataType.CAUSE_TRAINER;
     }
 
     public TrainerCause(Priority priority) {
-        super();
+        this();
         this.priority = priority;
     }
 
     public TrainerCause(Priority priority, String message) {
         super(message);
         this.priority = priority;
+        type = DataType.CAUSE_TRAINER;
     }
 
     @Enumerated(EnumType.STRING)
