@@ -3,7 +3,10 @@ package com.abbasandfriends.injurymonitoringsystem.alarm;
 import android.content.DialogInterface;
 
 /**
- * Created by Nic on 11/26/2015.
+ * Click listener that will make a request for emergency response by sending
+ * an Alarm object to the database.
+ *
+ * @version 1
  */
 public class RequestListener implements DialogInterface.OnClickListener {
     @Override

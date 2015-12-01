@@ -3,7 +3,10 @@ package com.abbasandfriends.injurymonitoringsystem.alarm;
 import android.content.DialogInterface;
 
 /**
- * Created by Nic on 11/26/2015.
+ * Click listener for the dialog boxes that will dismiss the dialog
+ * when the button it is attached to is pressed.
+ *
+ * @version 1
  */
 public class DismissClickListener implements DialogInterface.OnClickListener {
     @Override
