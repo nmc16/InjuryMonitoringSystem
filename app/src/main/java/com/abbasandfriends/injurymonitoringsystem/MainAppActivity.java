@@ -13,6 +13,7 @@ import android.widget.Toast;
 import android.app.Activity;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
+import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
 import java.util.Date;
 
@@ -93,6 +94,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
                 RequestDialog requestDialog = new RequestDialog(MainAppActivity.this);
                 AlertDialog alertDialog = requestDialog.create();
                 alertDialog.show();
+                System.out.println("finished");
             }
         });
     }

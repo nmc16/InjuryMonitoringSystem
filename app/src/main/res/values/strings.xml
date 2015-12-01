@@ -12,6 +12,11 @@
         <item>Nic</item>
         <item>Abbas</item>
     </string-array>
+    <string-array name="request_spinner_items">
+        <item>Acceleration</item>
+        <item>Position</item>
+        <item>Alarm</item>
+    </string-array>
     <string name="title_activity_alarm_display">AlarmDisplay</string>
     <string name="alarm_dialog_title">Alarm Received!</string>
     <string name="alarm_dialog_dismiss">Dismiss</string>
