@@ -25,13 +25,31 @@ import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.data.Service;
 
-//unused
-
 
 public class  ConnectionsActivity extends Activity {
 
     private EditText etIP, etPort;
     private Button connect;
+
+
+    public static boolean ValidateIPAddress(String ipAddress)
+    {
+        String[] parts = ipAddress.split( "\\." );
+        if ( parts.length != 3 )
+        {
+            return false;
+        }
+        for ( String s : parts )
+        {
+            int i = Integer.parseInt( s );
+            if ( (i < 0) || (i > 255) )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 
 
@@ -56,34 +74,35 @@ public class  ConnectionsActivity extends Activity {
             public void onClick(View view) {
 
 
+                String ipAddress = etIP.getText().toString();
 
                 if (etPort.getText().toString().equals("")) {
-                    Toast.makeText(ConnectionsActivity.this, "Invalid Port", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ConnectionsActivity.this, "Provide a valid Port", Toast.LENGTH_SHORT).show();
                     return;
-                } else if (etIP.getText().toString().equals("")) {
-                    Toast.makeText(ConnectionsActivity.this, "Invalid IP", Toast.LENGTH_SHORT).show();
+                    //checks IP for valid input
+                } else if (ipAddress.equals("") || ipAddress.contains("..") || ipAddress.endsWith(".") || ipAddress.startsWith(".")) {
+                    Toast.makeText(ConnectionsActivity.this, "Provide a valid IP", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                //ipAddress = etIP.getText().toString();
+
                 //need to validate ip address
-                //if (ipAddress.ValidateIpAddress() = false);
-                //look at bottom nic for method we could use
+                if (ValidateIPAddress(ipAddress)) {
+                    Toast.makeText(ConnectionsActivity.this, "IP address is not valid", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
 
                 int hostPort = Integer.valueOf(etPort.getText().toString());
-                if (hostPort > upperPort || hostPort < lowPort){
+                if (hostPort > upperPort || hostPort < lowPort) {
                     Toast.makeText(ConnectionsActivity.this, "Invalid Port, choose one between 1000 and 9999", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
 
-
-
-
                 ConnectionHandler connectionHandler = new ConnectionHandler();
                 // Set up the connections to the database and the client connection to database
                 try {
-                    InetAddress inetAddress = InetAddress.getByName(etIP.getText().toString());
+                    InetAddress inetAddress = InetAddress.getByName(ipAddress);
                     connectionHandler.host(hostPort, inetAddress);
                     Socket s = connectionHandler.acceptClient();
                     connectionHandler.setDataBaseReceive(s);
@@ -175,23 +194,6 @@ public class  ConnectionsActivity extends Activity {
     }
 
 }
-/**
- * public static boolean ValidateIPAddress(String ipAddress)
- {
- String[] parts = ipAddress.split( "\\." );
- if ( parts.length != 3 )
- {
- return false;
- }
- for ( String s : parts )
- {
- int i = Integer.parseInt( s );
- if ( (i < 0) || (i > 255) )
- {
- return false;
- }
- }
- return true;
- }
 
- */
+
+
