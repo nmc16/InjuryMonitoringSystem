@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,7 @@ import sendable.alarm.Alarm;
 
 public class ConnectionHandler implements Consumer, Producer {
 
-    private ServerSocket server;
+    private Socket server;
     private Socket dataBaseReceive;
     private Socket dataBaseRequest;
     private Gson gson;
@@ -41,9 +39,7 @@ public class ConnectionHandler implements Consumer, Producer {
 
         // Start server
         try {
-            server = new ServerSocket();
-            server.setReuseAddress(true);
-            server.bind(new InetSocketAddress(InetAddress.getLocalHost(), hostPort));
+            server = new Socket(ip, hostPort);
         } catch (IOException e) {
             throw new CommunicationException("Could not open server socket or input stream", e);
         }
@@ -55,11 +51,7 @@ public class ConnectionHandler implements Consumer, Producer {
             throw new CommunicationException("Host socket is closed!");
         }
 
-        try {
-            return server.accept();
-        } catch (IOException e) {
-            throw new CommunicationException("Could not open server socket or input stream", e);
-        }
+        return server;
     }
 
     @Override
@@ -68,6 +60,10 @@ public class ConnectionHandler implements Consumer, Producer {
             // Get the input stream from the socket and read it into a string
             InputStream inputStream = clientSocket.getInputStream();
             Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
+
+            if(!scanner.hasNext()) {
+                return null;
+            }
             String msg = scanner.next();
 
             // Create readers to separate objects
