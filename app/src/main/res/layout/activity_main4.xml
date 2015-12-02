@@ -13,7 +13,8 @@
         android:layout_height="40sp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-
+        android:inputType="text"
+        android:digits="0123456789."
         android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Host IP Address..." />
