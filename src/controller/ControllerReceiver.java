@@ -25,8 +25,8 @@ public class ControllerReceiver implements Runnable {
     private static final Logger LOG = Logger.getLogger("CLogger");
     private final double threshold;
     private final Socket client;
-    private final String emergIP, appIP;
-    private final int emergPort, appPort;
+    private final String emergIP;
+    private final int emergPort;
     private Socket emergSocket, appSocket;
     private Database database;
     private Controller controller;
@@ -34,14 +34,13 @@ public class ControllerReceiver implements Runnable {
     private Position lastPosition;
 
     public ControllerReceiver(double threshold, Socket client, String emergIP, 
-    		                  int emergPort, String appIP, int appPort) {
+    		                  int emergPort, Socket appSocket) {
         this.threshold = threshold;
         this.client = client;
         this.emergIP = emergIP;
-        this.appIP = appIP;
         this.emergPort = emergPort;
-        this.appPort = appPort;
-        
+        this.appSocket = appSocket;
+
     }
 
     private <T extends Sendable> Service createService(Class<T> clazz, Request request, int dataType) {
@@ -121,11 +120,7 @@ public class ControllerReceiver implements Runnable {
         try {
             database.connect();
             database.init();
-            
-            // Connect to the app
-            LOG.info("Connecting to GUI...");
-            //appSocket = controller.connectTo(appIP, appPort);
-            
+
             // Connect to emergency station
             LOG.info("Connecting to emergency station...");
             emergSocket = controller.connectTo(emergIP, emergPort);

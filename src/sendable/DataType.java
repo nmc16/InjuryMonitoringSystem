@@ -11,4 +11,5 @@ public class DataType {
     public static final int CAUSE_PLAYER = 6;
     public static final int CAUSE_DATA = 7;
     public static final int CAUSE_TRAINER = 8;
+    public static final int INIT = 9;
 }
