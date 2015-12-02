@@ -89,7 +89,7 @@ public class ControllerTest {
     public void testSendAndReceive() throws Exception {
 
         // Run the main controller
-        ControllerRunner controllerRunner = new ControllerRunner(10, 9090, InetAddress.getLocalHost());
+        ControllerRunner controllerRunner = new ControllerRunner(10, 9090, InetAddress.getLocalHost(), "127.0.0.1", 8008, "127.0.0.1", 8080);
         controllerRunner.run();
         System.out.println("Controller running");
 
