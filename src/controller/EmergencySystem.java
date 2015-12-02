@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Scanner;
 
 import sendable.Sendable;
+import json.SendableDeserializer;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.pi4j.component.switches.SwitchListener;
@@ -32,7 +34,7 @@ public class EmergencySystem implements Consumer {
 	
 	
 	private final int BUFFER_SIZE = 65536;
-	private Gson gson;
+	private Gson gson = new GsonBuilder().registerTypeAdapter(Sendable.class, new SendableDeserializer()).create();
 	private ServerSocket server;
 	private String hostIP;
 	private int hostPort;
@@ -209,7 +211,7 @@ public class EmergencySystem implements Consumer {
 	// main method to run the code
 	public static void main(String args[]) throws InterruptedException, IOException, CommunicationException {
 		List<Sendable> emergencies;
-
+		Socket sock;
 		InetAddress ip;
 		
 		
@@ -228,23 +230,28 @@ public class EmergencySystem implements Consumer {
 		emergency.setHostPort(in.nextInt());
 		System.out.println("The clients port number is: " + emergency.getHostPort());
 
+		System.out.println(emergency.getHostPort());
 		
 	
 		
 		ip = InetAddress.getByName(emergency.getHostIP());
 		//use the connect to method to set the socket 
 		emergency.host(emergency.getHostPort(),ip);
-		emergency.setHostSocket(emergency.acceptClient());
+		
+
+		System.out.println("about to set the sock");
+		sock = emergency.acceptClient();	
+		System.out.println("succesfully loaded socket");
+
 		boolean waiting = true;
 		while(waiting){
 			
-				emergencies=emergency.receive(emergency.getHostSocket());
+				emergencies=emergency.receive(sock);
+
+				System.out.println("made it past recieve");
+
 				if(emergencies != null){
 					emergency.setUpButtonHandler();	
-					System.out.println("Would you like to continue listening for alarms ?  [T][F]");
-					if( in.next()== "F"){
-						waiting = false;
-					}
 				}
 			
 		}
