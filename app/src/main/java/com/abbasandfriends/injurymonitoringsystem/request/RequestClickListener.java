@@ -8,8 +8,13 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.abbasandfriends.injurymonitoringsystem.ContextHandler;
 import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
+import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 
+import java.net.Socket;
+
+import exception.CommunicationException;
 import sendable.DataType;
 import sendable.data.Request;
 
@@ -18,8 +23,8 @@ import sendable.data.Request;
  * uses the {@link RequestDialog} dialog box and the input fields from it
  * to create a request object.
  *
- * Calls the {@link MainAppActivity#requestData(Request)} method with the
- * request data after the valid input has been entered.
+ * Sends request to database and lets the retrieve thread handle
+ * the incoming request.
  *
  * @version 1
  */
@@ -77,9 +82,31 @@ public class RequestClickListener implements View.OnClickListener {
             dialog.dismiss();
 
             // Send a request from the main activity
-            MainAppActivity.requestData(request);
+            sendRequest();
         } else {
             Toast.makeText(activity, "Please enter valid player ID", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void sendRequest() {
+        // Attempt to get the connection from context
+        Object o = ContextHandler.get(ContextHandler.HANDLER);
+
+        // Check the object is valid
+        if (o == null || !(o instanceof ConnectionHandler)) {
+            Toast.makeText(activity, "You must set-up the connections before you can send request!",
+                           Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // If it is valid, then attempt to send the request
+        try {
+            ConnectionHandler connectionHandler = (ConnectionHandler) o;
+            Socket s = connectionHandler.getDataBaseRequest();
+            connectionHandler.send(request, s);
+        } catch (CommunicationException e) {
+            Toast.makeText(activity, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 }

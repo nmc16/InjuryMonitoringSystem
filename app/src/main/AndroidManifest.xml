@@ -31,6 +31,9 @@
             android:name=".GraphActivity"
             android:label="@string/title_activity_main3"
             android:theme="@style/AppTheme"></activity>
+        <activity android:name=".ConnectionsActivity"
+                  android:label="IDK"
+                  android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

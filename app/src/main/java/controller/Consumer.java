@@ -39,7 +39,6 @@ public interface Consumer {
      * Receives all classes that exist on the buffer and attempts to parse the JSON
      * strings into the class type passed.
      *
-     * @param inputStream Input stream object from the client socket to read from
      * @return Returns a list containing the objects on the buffer
      * @throws CommunicationException Thrown if could not read the input buffer
      */

@@ -22,7 +22,6 @@ import com.abbasandfriends.injurymonitoringsystem.R;
 public class RequestDialog {
     private AlertDialog.Builder builder;
     private Activity activity;
-    private RequestClickListener listener;
 
     public RequestDialog(Activity activity) {
         builder = new AlertDialog.Builder(activity);
@@ -87,9 +86,8 @@ public class RequestDialog {
         dialog.show();
 
         // Change the listener to one that does not close right away
-        listener = new RequestClickListener(dialog, startTime, endTime, player, s, activity);
         Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        button.setOnClickListener(listener);
+        button.setOnClickListener(new RequestClickListener(dialog, startTime, endTime, player, s, activity));
 
         return dialog;
     }

@@ -73,7 +73,7 @@ public class Controller implements Producer, Consumer {
     }
 
     /**
-     * @see Consumer#receive(InputStream)
+     * @see Consumer#receive(Socket)
      */
 	@Override
 	public List<Sendable> receive(Socket clientSocket) throws CommunicationException {

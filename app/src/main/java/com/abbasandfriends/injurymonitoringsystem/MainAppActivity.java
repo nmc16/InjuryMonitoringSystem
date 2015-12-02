@@ -8,6 +8,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
@@ -15,11 +17,12 @@ import android.app.Activity;
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
 import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
+import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.PlayerCause;
-import sendable.data.Request;
 
 
 /**
@@ -32,6 +35,8 @@ import sendable.data.Request;
  */
 public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener {
     public static String currentName;
+    private static List<Sendable> data;
+    private static TableLayout table;
 
     /**
      * Method that creates the main activity view and links its widgets to their listeners.
@@ -39,7 +44,11 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
+        data = new ArrayList<Sendable>();
+
         setContentView(R.layout.activity_main);
 
         final Spinner spinner;
@@ -47,8 +56,10 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         final Button graph;
         final Button emerg;
         final Button request;
+        final Button setupButton;
+        table = (TableLayout) findViewById(R.id.dataTable);
 
-        spinner= (Spinner) findViewById((R.id.spinner));
+        spinner = (Spinner) findViewById((R.id.spinner));
 
         //Adapter links the xml array to the spinner and sets it as dropdown
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.players, android.R.layout.simple_spinner_dropdown_item);
@@ -59,6 +70,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         warningInfo = (Button) findViewById(R.id.prevWarn);
         emerg = (Button) findViewById(R.id.emerg);
         request = (Button) findViewById(R.id.requestButton);
+        setupButton = (Button) findViewById(R.id.setupButton);
 
         //when the graph button is pressed, switch content view to to the graph activity
         graph.setOnClickListener(new View.OnClickListener() {
@@ -89,12 +101,21 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             }
 
         });
+
         request.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 RequestDialog requestDialog = new RequestDialog(MainAppActivity.this);
                 AlertDialog alertDialog = requestDialog.create();
                 alertDialog.show();
+            }
+        });
+
+        setupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainAppActivity.this, ConnectionsActivity.class);
+                startActivity(i);
             }
         });
     }
@@ -126,8 +147,8 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
     }
 
-    public static void requestData(Request request) {
-        System.out.println(request.getDate() + " " + request.getStartTime() + " " + request.getEndTime() + " " + request.getUID());
-    }
+    public static void addData(List<Sendable> sendables) {
+        data.addAll(sendables);
 
+    }
 }
