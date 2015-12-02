@@ -125,14 +125,17 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
      * a toast is created onscreen declaring the name selected.
      *
      */
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        TextView playerName = (TextView) view;
-        Toast.makeText(this, "Selected " + playerName.getText(), Toast.LENGTH_SHORT).show();
-        CharSequence playerChar = playerName.getText();
+        if (view != null && parent != null) {
+            TextView playerName = (TextView) view;
+            Toast.makeText(this, "Selected " + playerName.getText(), Toast.LENGTH_SHORT).show();
+            CharSequence playerChar = playerName.getText();
 
-        //The selected name is assigned to a string variable to be used in the secondary activities
-        currentName = playerChar.toString();
+            //The selected name is assigned to a string variable to be used in the secondary activities
+            currentName = playerChar.toString();
+        }
 
 
 

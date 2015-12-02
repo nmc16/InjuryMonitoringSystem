@@ -28,10 +28,12 @@ import sendable.data.Service;
 //unused
 
 
-public class ConnectionsActivity extends Activity {
+public class  ConnectionsActivity extends Activity {
 
     private EditText etIP, etPort;
     private Button connect;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,20 +43,44 @@ public class ConnectionsActivity extends Activity {
         etIP = (EditText) findViewById(R.id.ipAddressHost);
         etPort = (EditText) findViewById(R.id.portNumberHost);
         connect = (Button) findViewById(R.id.connectButton);
+        final int upperPort = 9999;
+        final int lowPort = 1000;
+
+
+
+
 
 
         connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (etPort.getText().toString().equals("")){
+
+
+                if (etPort.getText().toString().equals("")) {
                     Toast.makeText(ConnectionsActivity.this, "Invalid Port", Toast.LENGTH_SHORT).show();
+                    return;
+                } else if (etIP.getText().toString().equals("")) {
+                    Toast.makeText(ConnectionsActivity.this, "Invalid IP", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                //ipAddress = etIP.getText().toString();
+                //need to validate ip address
+                //if (ipAddress.ValidateIpAddress() = false);
+                //look at bottom nic for method we could use
+
+
+                int hostPort = Integer.valueOf(etPort.getText().toString());
+                if (hostPort > upperPort || hostPort < lowPort){
+                    Toast.makeText(ConnectionsActivity.this, "Invalid Port, choose one between 1000 and 9999", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                ConnectionHandler connectionHandler = new ConnectionHandler();
-                int hostPort = Integer.valueOf(etPort.getText().toString());
 
+
+
+
+                ConnectionHandler connectionHandler = new ConnectionHandler();
                 // Set up the connections to the database and the client connection to database
                 try {
                     InetAddress inetAddress = InetAddress.getByName(etIP.getText().toString());
@@ -71,14 +97,15 @@ public class ConnectionsActivity extends Activity {
 
                 } catch (UnknownHostException e) {
                     Toast.makeText(ConnectionsActivity.this, "Could not connect to host: " +
-                                   e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                            e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 } catch (CommunicationException e) {
                     Toast.makeText(ConnectionsActivity.this, "Could not set up receive connection: "
-                                   + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                            + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 }
 
+
                 runOnUiThread(new Runnable() {
-                    public Handler mHandler;
+                    //public Handler mHandler;
 
                     @Override
                     public void run() {
@@ -135,14 +162,10 @@ public class ConnectionsActivity extends Activity {
                         List<Sendable> list = service.getData();
                     }
 
-
                 });
-
                 onBackPressed();
             }
         });
-
-
     }
 
     @Override
@@ -150,4 +173,25 @@ public class ConnectionsActivity extends Activity {
 
         return true;
     }
+
 }
+/**
+ * public static boolean ValidateIPAddress(String ipAddress)
+ {
+ String[] parts = ipAddress.split( "\\." );
+ if ( parts.length != 3 )
+ {
+ return false;
+ }
+ for ( String s : parts )
+ {
+ int i = Integer.parseInt( s );
+ if ( (i < 0) || (i > 255) )
+ {
+ return false;
+ }
+ }
+ return true;
+ }
+
+ */
