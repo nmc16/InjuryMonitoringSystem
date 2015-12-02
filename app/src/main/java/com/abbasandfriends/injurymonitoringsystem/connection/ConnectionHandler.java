@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -40,7 +41,9 @@ public class ConnectionHandler implements Consumer, Producer {
 
         // Start server
         try {
-            server = new ServerSocket(hostPort, 10, ip);
+            server = new ServerSocket();
+            server.setReuseAddress(true);
+            server.bind(new InetSocketAddress(InetAddress.getLocalHost(), hostPort));
         } catch (IOException e) {
             throw new CommunicationException("Could not open server socket or input stream", e);
         }
