@@ -3,6 +3,7 @@ package com.abbasandfriends.injurymonitoringsystem.request;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -104,6 +105,7 @@ public class RequestClickListener implements View.OnClickListener {
             ConnectionHandler connectionHandler = (ConnectionHandler) o;
             Socket s = connectionHandler.getDataBaseRequest();
             connectionHandler.send(request, s);
+            Log.d("Request", "Request sent to database");
         } catch (CommunicationException e) {
             Toast.makeText(activity, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
         }

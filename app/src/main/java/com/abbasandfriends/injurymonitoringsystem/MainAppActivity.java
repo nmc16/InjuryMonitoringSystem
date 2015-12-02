@@ -9,12 +9,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
+import com.abbasandfriends.injurymonitoringsystem.async.AsyncConnectionSetup;
+import com.abbasandfriends.injurymonitoringsystem.async.AsyncReceive;
 import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
 import java.util.ArrayList;
@@ -34,6 +35,10 @@ import sendable.alarm.PlayerCause;
  * @version 2
  */
 public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener {
+    public static final String HOST_IP = "hostip";
+    public static final String HOST_PORT = "hostport";
+    public static final String CLIENT_IP = "clientip";
+    public static final String CLIENT_PORT = "cleintport";
     public static String currentName;
     private static List<Sendable> data;
     private static TableLayout table;
@@ -115,7 +120,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainAppActivity.this, ConnectionsActivity.class);
-                startActivity(i);
+                startActivityForResult(i, 1);
             }
         });
     }
@@ -139,6 +144,26 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
 
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && data != null) {
+            if (resultCode == RESULT_OK) {
+                String hostIP = data.getStringExtra(HOST_IP);
+                String hostPort = data.getStringExtra(HOST_PORT);
+                String clientIP = data.getStringExtra(CLIENT_IP);
+                String clientPort = data.getStringExtra(CLIENT_PORT);
+
+                String params[] = {hostIP, hostPort, clientIP, clientPort};
+                new AsyncConnectionSetup().execute(params);
+
+                Activity aParams[] = {MainAppActivity.this};
+                new AsyncReceive().execute(aParams);
+            }
+        }
     }
 
     /**
