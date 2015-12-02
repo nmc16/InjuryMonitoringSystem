@@ -19,20 +19,25 @@ public class  ConnectionsActivity extends Activity {
 
     public static boolean ValidateIPAddress(String ipAddress)
     {
+
         String[] parts = ipAddress.split( "\\." );
-        if ( parts.length != 3 )
-        {
-            return false;
-        }
+
         for ( String s : parts )
         {
             int i = Integer.parseInt( s );
             if ( (i < 0) || (i > 255) )
             {
-                return false;
+                return true;
             }
+
         }
-        return true;
+        if ( parts.length != 4 )
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     @Override
@@ -64,6 +69,11 @@ public class  ConnectionsActivity extends Activity {
                     //checks IP for valid input
                 } else if (ipAddress.equals("") || ipAddress.contains("..") || ipAddress.endsWith(".") || ipAddress.startsWith(".")) {
                     Toast.makeText(ConnectionsActivity.this, "Provide a valid IP", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (ValidateIPAddress(ipAddress)) {
+                    Toast.makeText(ConnectionsActivity.this, "IP address is not valid", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 //ipAddress = etIP.getText().toString();
