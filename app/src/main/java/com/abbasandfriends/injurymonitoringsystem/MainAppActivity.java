@@ -3,6 +3,7 @@ package com.abbasandfriends.injurymonitoringsystem;
 import android.app.AlertDialog;
 import android.app.Activity;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -32,7 +33,6 @@ import exception.CommunicationException;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.PlayerCause;
-import sendable.data.Service;
 
 
 /**
@@ -46,6 +46,7 @@ import sendable.data.Service;
 public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener {
     public static final String HOST_IP = "hostip";
     public static final String HOST_PORT = "hostport";
+    public static final String LOG_TAG = "MainAppActivity";
     public static String currentName;
     public static List<Sendable> data;
     private static TableLayout table;
@@ -70,6 +71,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         final Button warningInfo = (Button) findViewById(R.id.prevWarn);
         final Button emerg = (Button) findViewById(R.id.emerg);
         final Button request = (Button) findViewById(R.id.requestButton);
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
 
         table = (TableLayout) findViewById(R.id.dataTable);
 
@@ -79,10 +81,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
         animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
         animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
-        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
-
-
-
         setupButton.startAnimation(animation);
 
         spinner = (Spinner) findViewById((R.id.spinner));
@@ -164,16 +162,19 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // Check that the data sent back is valid
         if (requestCode == 1 && data != null) {
             if (resultCode == RESULT_OK) {
+                // Get the ip and port from the last activity
                 String hostIP = data.getStringExtra(HOST_IP);
                 String hostPort = data.getStringExtra(HOST_PORT);
 
+                // Create the parameter list and start connection setup
                 String params[] = {hostIP, hostPort};
                 new AsyncConnectionSetup().execute(params);
 
-                Activity aParams[] = {MainAppActivity.this};
-                new AsyncReceive().execute(aParams);
+                // Start the receive thread
+                new AsyncReceive().execute();
             }
         }
     }
@@ -187,20 +188,26 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
     }
     //TODO fix this Richard
-    public static void addData(List<Sendable> sendables) {
-        data.addAll(sendables);
+    public static void addData(Sendable sendable) {
+        Log.d(LOG_TAG, "Received data from " + sendable.getUID() + " at " + sendable.getTime() +
+                " " + sendable.toString());
+        data.add(sendable);
     }
-    
-    private class AsyncReceive extends AsyncTask<Activity, Void, List<Sendable>> {
+
+    private class AsyncReceive extends AsyncTask<Void, Void, List<Sendable>> {
         private static final String LOG_TAG = "AsyncReceive";
         private AlarmDialog alarmDialog;
-        private Activity params[];
+        private boolean errorFlag = false;
+        private MediaPlayer mp;
 
         @Override
-        protected List<Sendable> doInBackground(Activity... params) {
-            this.params = params;
+        protected List<Sendable> doInBackground(Void... params) {
             // Attempt to get the connection from context
             Object o = ContextHandler.get(ContextHandler.HANDLER);
+
+            // Set up the alarm sound
+            mp = MediaPlayer.create(getApplicationContext(), R.raw.sirensound);
+            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
             // If it is valid, then attempt to send the request
             try {
@@ -226,45 +233,42 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
                 Log.e(LOG_TAG, "Exception during receive: " + e.getLocalizedMessage() + "\n Cause: " +
                         e.getCause().getMessage());
                 e.printStackTrace();
+                errorFlag = true;
             } catch (InterruptedException e) {
                 Log.e(LOG_TAG, "Interrupted during thread sleep!");
-
             }
 
             return null;
         }
 
         private void parse(List<Sendable> list) {
+            if (list == null) {
+                return;
+            }
+
             for (Sendable sendable : list) {
                 if (sendable instanceof Alarm) {
                     displayAlarm((Alarm) sendable);
-                } else if (sendable instanceof Service) {
-                    decodeService(sendable);
-                } else {
-                    // Do nothing
                 }
             }
         }
 
         private void displayAlarm(Alarm alarm) {
             if (!dialogFlag) {
+                mp.start();
                 alarmDialog.create(alarm).show();
                 dialogFlag = true;
             }
-        }
-
-        @SuppressWarnings("unchecked")
-        private void decodeService(Sendable sendable) {
-            Service service = (Service) sendable;
-            List<Sendable> list = service.getData();
-            Log.d("AsyncReceive", list.toString());
         }
 
         @Override
         protected void onPostExecute(List<Sendable> sendables) {
             super.onPostExecute(sendables);
             parse(sendables);
-            new AsyncReceive().execute(params);
+
+            if (!errorFlag) {
+                new AsyncReceive().execute();
+            }
         }
 
         @Override

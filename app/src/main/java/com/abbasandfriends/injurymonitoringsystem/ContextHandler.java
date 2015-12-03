@@ -1,7 +1,5 @@
 package com.abbasandfriends.injurymonitoringsystem;
 
-import android.util.Log;
-
 import java.util.Hashtable;
 
 /**
@@ -30,12 +28,10 @@ public class ContextHandler {
     }
 
     public static void add(String key, Object o) {
-        Log.d("A", "ADDED");
         getInstance().context.put(key, o);
     }
 
     public static Object get(String key) {
-        Log.d("A", "RETURNED");
         return getInstance().context.get(key);
     }
 

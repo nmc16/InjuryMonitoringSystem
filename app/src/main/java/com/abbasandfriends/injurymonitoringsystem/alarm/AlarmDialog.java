@@ -3,6 +3,7 @@ package com.abbasandfriends.injurymonitoringsystem.alarm;
 import android.app.Activity;
 import android.app.AlertDialog;
 
+import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
 import com.abbasandfriends.injurymonitoringsystem.R;
 
 import sendable.alarm.Alarm;
