@@ -46,7 +46,7 @@ public class AlarmDialog {
             sb.append("Data crossed ").append(((DataCause) alarm.getCause()).getThreshold())
                     .append(" threshold!");
         } else {
-            sb.append("Unkown alarm cause");
+            sb.append("Unknown alarm cause");
         }
 
         // Display the message created from the alarm data

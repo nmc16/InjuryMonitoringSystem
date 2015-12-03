@@ -134,7 +134,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     /**
      * When a name is selected in the spinner,
      * a toast is created onscreen declaring the name selected.
-     *
      */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
