@@ -49,6 +49,7 @@ public class AlarmDialog {
             sb.append("Unknown alarm cause");
         }
 
+
         // Display the message created from the alarm data
         builder.setMessage(sb);
 

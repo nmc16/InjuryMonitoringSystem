@@ -1,9 +1,14 @@
 package com.abbasandfriends.injurymonitoringsystem;
 
 import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -11,7 +16,6 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.Activity;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
 import com.abbasandfriends.injurymonitoringsystem.async.AsyncConnectionSetup;
@@ -56,18 +60,30 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         data = new ArrayList<Sendable>();
 
-        setContentView(R.layout.activity_main);
-
         final Spinner spinner;
-        final Button warningInfo;
-        final Button graph;
-        final Button emerg;
-        final Button request;
-        final Button setupButton;
+        final Button setupButton = (Button) findViewById(R.id.setupButton);
+        final Button graph = (Button) findViewById(R.id.graph);
+        final Button warningInfo = (Button) findViewById(R.id.prevWarn);
+        final Button emerg = (Button) findViewById(R.id.emerg);
+        final Button request = (Button) findViewById(R.id.requestButton);
+
         table = (TableLayout) findViewById(R.id.dataTable);
+
+        //Animations for unclicked buttons
+        final Animation animation = new AlphaAnimation(1, 0); // Change alpha from fully visible to invisible
+        animation.setDuration(500); // duration - half a second
+        animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
+        animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
+        animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
+
+
+
+        setupButton.startAnimation(animation);
 
         spinner = (Spinner) findViewById((R.id.spinner));
 
@@ -76,11 +92,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-        graph = (Button) findViewById(R.id.graph);
-        warningInfo = (Button) findViewById(R.id.prevWarn);
-        emerg = (Button) findViewById(R.id.emerg);
-        request = (Button) findViewById(R.id.requestButton);
-        setupButton = (Button) findViewById(R.id.setupButton);
 
         //when the graph button is pressed, switch content view to to the graph activity
         graph.setOnClickListener(new View.OnClickListener() {
@@ -106,9 +117,11 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             @Override
             public void onClick(View view) {
                 Toast.makeText(getBaseContext(), "Emergency Pressed", Toast.LENGTH_SHORT).show();
+                mp.start();
                 AlertDialog alertDialog = new AlarmDialog(MainAppActivity.this).
                         create(new Alarm(10, System.currentTimeMillis(), new PlayerCause(10)));
                 alertDialog.show();
+
             }
 
         });
@@ -122,9 +135,12 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             }
         });
 
+
+
         setupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                v.clearAnimation();
                 Intent i = new Intent(MainAppActivity.this, ConnectionsActivity.class);
                 startActivityForResult(i, 1);
             }
@@ -180,4 +196,5 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     public static void addData(List<Sendable> sendables) {
         data.addAll(sendables);
     }
+
 }

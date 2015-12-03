@@ -29,6 +29,7 @@ public class GraphActivity extends android.app.Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
 
+        //graphActivity = MainAppActivity.data;
         graphActivity = null;
         if (graphActivity != null) {
             BarChart chart = (BarChart) findViewById(R.id.chart);
@@ -42,7 +43,7 @@ public class GraphActivity extends android.app.Activity {
         else{
             Toast.makeText(this, "Please request data", Toast.LENGTH_LONG).show();
         }
-        //graphActivity = MainAppActivity.data;
+
     }
 
     private ArrayList<BarDataSet> getDataSet() {
