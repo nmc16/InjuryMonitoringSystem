@@ -219,45 +219,45 @@ public class EmergencySystem implements Consumer {
 	// main method to run the code
 	public static void main(String args[]) throws InterruptedException, IOException, CommunicationException {
 		// initialize variables used in main
-		Socket sock;
 		InetAddress ip;
 		
 		EmergencySystem emergency = new EmergencySystem();
 		Scanner in = new Scanner(System.in);
 		// Take in the location of the database/controller 
-		System.out.println("\n Please enter the IP of the controller 10.0.0.X "); 
+		System.out.println("\nPlease enter the IP of the controller 10.0.0.X:"); 
 		emergency.setHostIP("10.0.0."+ in.next());
-		System.out.println("\n The IP of the controller is:" + emergency.getHostIP());
+		System.out.println("The IP of the controller is: " + emergency.getHostIP());
 	
 		// Take in the port of the client 
-		System.out.println("\n Please enter the database port number ");
+		System.out.println("\nPlease enter the port number:");
 		emergency.setHostPort(in.nextInt());
-		System.out.println("The database port number is: " + emergency.getHostPort());
+		System.out.println("The port number is: " + emergency.getHostPort());
 		
 		ip = InetAddress.getByName(emergency.getHostIP());
 		// Use the connect to method to set the socket 
 		emergency.host(emergency.getHostPort(),ip);
 
-		sock = emergency.acceptClient();	
-		System.out.println("succesfully connected");
-		
 		// creating an infinite loop to keep receiving signals
 		boolean waiting = true;
+		boolean waitdata = true;
 		while(waiting){
+				// accept client 
+				Socket sock = emergency.acceptClient();	
+				System.out.println("\nDevice connected!");
+		
 				//creates thread
 				(new Thread(new Runnable() {
 					public void run() {
-						List<Sendable> emergencies = null;
-						try {
-							emergencies=emergency.receive(sock);
-						} catch (CommunicationException e) {
-							e.printStackTrace();
+						while(waitdata){
+							List<Sendable> emergencies = null; 
+							try {
+								emergencies = emergency.receive(sock);
+								emergency.setUpButtonHandler();
+							} catch (CommunicationException e) {
+								e.printStackTrace();
+							}
 						}
-						if(emergencies != null){
-							emergency.setUpButtonHandler();	
-						}
-					}
-					
+					}	
 				})).start();
 		}
 		emergency.disconnectHost();
