@@ -36,11 +36,29 @@ public class AsyncConnectionSetup extends AsyncTask<String, Void, Boolean> {
             InetAddress inetAddress = InetAddress.getByName(params[0]);
             Log.d(LOG_TAG, "Connecting to IP " + params[0]);
             connectionHandler.host(hostPort, inetAddress);
-            Socket s = connectionHandler.acceptClient();
-            connectionHandler.setDataBaseReceive(s);
 
             // Add the connection handler to the context
             ContextHandler.add(ContextHandler.HANDLER, connectionHandler);
+
+            // Wait for client connection
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ConnectionHandler connectionHandler = (ConnectionHandler)ContextHandler.get(ContextHandler.HANDLER);
+
+                    try {
+                        Log.d(LOG_TAG, "Accepting client...");
+                        Socket s = connectionHandler.acceptClient();
+                        connectionHandler.setDataBaseReceive(s);
+                        ContextHandler.add(ContextHandler.HANDLER, connectionHandler);
+                        Log.d(LOG_TAG, "Accepted client.");
+
+                    } catch (CommunicationException e) {
+                        Log.e(LOG_TAG, "Could not accept client!");
+                    }
+                }
+            }).start();
+
             Log.d(LOG_TAG, "Finished.");
             return true;
 
