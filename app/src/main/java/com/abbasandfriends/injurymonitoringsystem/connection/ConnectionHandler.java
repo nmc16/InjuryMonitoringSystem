@@ -12,14 +12,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import controller.Consumer;
 import controller.Producer;
 import exception.CommunicationException;
 import json.SendableDeserializer;
 import sendable.Sendable;
-import sendable.alarm.Alarm;
 
 public class ConnectionHandler implements Consumer, Producer {
     private static final int BUFFER_SIZE = 65536;

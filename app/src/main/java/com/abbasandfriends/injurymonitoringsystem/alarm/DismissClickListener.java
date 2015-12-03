@@ -13,7 +13,7 @@ import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
 public class DismissClickListener implements DialogInterface.OnClickListener {
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        dialog.dismiss();
         MainAppActivity.dialogFlag = false;
+        dialog.dismiss();
     }
 }
