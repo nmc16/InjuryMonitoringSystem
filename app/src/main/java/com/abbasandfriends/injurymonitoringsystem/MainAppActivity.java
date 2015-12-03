@@ -52,6 +52,8 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     private static TableLayout table;
     public static boolean dialogFlag = false;
 
+
+
     /**
      * Method that creates the main activity view and links its widgets to their listeners.
      * Declares all buttons and the spinner that are used in the view.
@@ -71,7 +73,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         final Button warningInfo = (Button) findViewById(R.id.prevWarn);
         final Button emerg = (Button) findViewById(R.id.emerg);
         final Button request = (Button) findViewById(R.id.requestButton);
-        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
 
         table = (TableLayout) findViewById(R.id.dataTable);
 
@@ -114,9 +115,10 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             @Override
             public void onClick(View view) {
                 Toast.makeText(getBaseContext(), "Emergency Pressed", Toast.LENGTH_SHORT).show();
-                mp.start();
+                //mediaStart();
                 AlertDialog alertDialog = new AlarmDialog(MainAppActivity.this).
                         create(new Alarm(10, System.currentTimeMillis(), new PlayerCause(10)));
+                mediaStart();
                 alertDialog.show();
             }
 
@@ -178,6 +180,10 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             }
         }
     }
+    public void mediaStart(){
+        MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
+        mp.start();
+    }
 
     /**
      * If nothing is selected, toast the screen
@@ -198,7 +204,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         private static final String LOG_TAG = "AsyncReceive";
         private AlarmDialog alarmDialog;
         private boolean errorFlag = false;
-        private MediaPlayer mp;
 
         @Override
         protected List<Sendable> doInBackground(Void... params) {
@@ -206,8 +211,10 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             Object o = ContextHandler.get(ContextHandler.HANDLER);
 
             // Set up the alarm sound
-            mp = MediaPlayer.create(getApplicationContext(), R.raw.sirensound);
-            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+           // mp = MediaPlayer.create(getApplicationContext(), R.raw.sirensound);
+            //mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
 
             // If it is valid, then attempt to send the request
             try {
@@ -255,9 +262,9 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
 
         private void displayAlarm(Alarm alarm) {
             if (!dialogFlag) {
-                mp.start();
                 alarmDialog.create(alarm).show();
                 dialogFlag = true;
+                mediaStart();
             }
         }
 
