@@ -37,12 +37,30 @@ public class AlarmDialog {
     public AlertDialog create(Alarm alarm) {
         // Set the title of the dialog box
         builder.setTitle(R.string.alarm_dialog_title);
+        String currentPlayer;
+
 
         // Create a new string based on the cause of the alarm
         StringBuilder sb = new StringBuilder("Cause: ");
         if (alarm.getCause() instanceof PlayerCause) {
-           sb.append("Player ").append(((PlayerCause) alarm.getCause()).getPlayerID())
-                   .append(" pressed emergency button!");
+            //hardcoded for simplicity
+            //In reality an arraylist initializer would be preferred
+            if (((PlayerCause) alarm.getCause()).getPlayerID() == 1){
+                currentPlayer = "Charlie";
+            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 2){
+                currentPlayer = "Luke";
+            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 3){
+                currentPlayer = "Nic";
+            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 4){
+                currentPlayer = "Abbas";
+            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 10){
+                currentPlayer = "Trainer";
+            }
+            else {
+                currentPlayer = (((PlayerCause) alarm.getCause()).getPlayerID()) + "";
+            }
+            sb.append("Player ").append(currentPlayer).append(" pressed emergency button!");
+
         } else if (alarm.getCause() instanceof DataCause) {
             sb.append("Player (").append(alarm.getUID()).append(") crossed ").append(((DataCause) alarm.getCause()).getThreshold())
                     .append(" threshold at time ").append(alarm.getDate()).append("!");
@@ -57,7 +75,6 @@ public class AlarmDialog {
         // Set the custom listeners in the dialog box
         builder.setPositiveButton(R.string.alarm_dialog_request, new RequestListener());
         builder.setNegativeButton(R.string.alarm_dialog_dismiss, new DismissClickListener());
-
         return builder.create();
     }
 }
