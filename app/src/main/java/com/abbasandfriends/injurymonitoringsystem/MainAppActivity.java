@@ -32,7 +32,10 @@ import java.util.List;
 import exception.CommunicationException;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
+import sendable.alarm.Cause;
 import sendable.alarm.PlayerCause;
+import sendable.alarm.Priority;
+import sendable.alarm.TrainerCause;
 
 
 /**
@@ -115,9 +118,9 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             @Override
             public void onClick(View view) {
                 Toast.makeText(getBaseContext(), "Emergency Pressed", Toast.LENGTH_SHORT).show();
-                //mediaStart();
                 AlertDialog alertDialog = new AlarmDialog(MainAppActivity.this).
-                        create(new Alarm(10, System.currentTimeMillis(), new PlayerCause(10)));
+                        create(new Alarm(1, System.currentTimeMillis(),
+                                new Cause("Request emergency for player!")));
                 mediaStart();
                 alertDialog.show();
             }
@@ -210,12 +213,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             // Attempt to get the connection from context
             Object o = ContextHandler.get(ContextHandler.HANDLER);
 
-            // Set up the alarm sound
-
-           // mp = MediaPlayer.create(getApplicationContext(), R.raw.sirensound);
-            //mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-
             // If it is valid, then attempt to send the request
             try {
                 // Check the object is valid
@@ -232,9 +229,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
                     Thread.sleep(5000);
                     return null;
                 }
-                Log.d(LOG_TAG, "Waiting for data...");
                 List<Sendable> received = connectionHandler.receive(s);
-                Log.d(LOG_TAG, "Received data...");
                 return received;
             } catch (CommunicationException e) {
                 Log.e(LOG_TAG, "Exception during receive: " + e.getLocalizedMessage() + "\n Cause: " +
@@ -249,10 +244,11 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         }
 
         private void parse(List<Sendable> list) {
-            if (list == null) {
+            if (list == null || list.isEmpty()) {
                 return;
             }
 
+            Log.d(LOG_TAG, "Received data from database...");
             for (Sendable sendable : list) {
                 if (sendable instanceof Alarm) {
                     displayAlarm((Alarm) sendable);

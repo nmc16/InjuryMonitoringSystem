@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,49 +63,55 @@ public class ConnectionHandler implements Consumer, Producer {
 
     @Override
     public List<Sendable> receive(Socket clientSocket) throws CommunicationException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte tempBuffer[] = new byte[BUFFER_SIZE];
+        List<Sendable> received = new ArrayList<Sendable>();
+
         try {
+            clientSocket.setSoTimeout(2000);
+
             // Get the input stream from the socket and read it into a string
             InputStream inputStream = clientSocket.getInputStream();
 
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            byte tempBuffer[] = new byte[BUFFER_SIZE];
-
-            Log.d(LOG_TAG, "Reading message from buffer...");
             int result = inputStream.read(tempBuffer);
             while (result != -1) {
                 buffer.write(tempBuffer, 0, result);
                 result = inputStream.read(tempBuffer);
-                if (inputStream.available() < 1) {
-                    break;
-                }
             }
-
-            String msg = new String(buffer.toByteArray());
-            msg = msg.replace("\u0000", "").replace("\\u0000", "");
-
-            // Create readers to separate objects
-            JsonReader jsonReader = new JsonReader(new StringReader(msg));
-            jsonReader.setLenient(true);
-
-            // Add objects to list
-            List<Sendable> received = new ArrayList<Sendable>();
-            while(jsonReader.hasNext() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
-                try {
-                    Sendable sendable = gson.fromJson(jsonReader, Sendable.class);
-                    received.add(sendable);
-                } catch(JsonSyntaxException e) {
-                    // Catch error with full buffer, one of the data points will be lost
-                    Log.e(LOG_TAG, "JSON could not be parsed, buffer may have overflown: " +
-                                   e.getMessage());
-                    Log.e(LOG_TAG, "May have lost data points from request!");
-                }
-            }
-
-            return received;
-
         } catch (IOException e) {
-            throw new CommunicationException("Could not read from input buffer", e);
+            if (!(e instanceof SocketTimeoutException)) {
+                throw new CommunicationException("Could not read from input buffer or timed out", e);
+            }
         }
+
+        String msg = new String(buffer.toByteArray());
+        msg = msg.replace("\u0000", "").replace("\\u0000", "");
+
+        // Create readers to separate objects
+        JsonReader jsonReader = new JsonReader(new StringReader(msg));
+        jsonReader.setLenient(true);
+
+        // If the message is null then return the empty list
+        if (msg.length() == 0) {
+             return received;
+        }
+
+        Log.d(LOG_TAG, "Received: " + msg);
+        try {
+            while (jsonReader.hasNext() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
+                Sendable sendable = gson.fromJson(jsonReader, Sendable.class);
+                received.add(sendable);
+            }
+        } catch(JsonSyntaxException e){
+                // Catch error with full buffer, one of the data points will be lost
+                Log.e(LOG_TAG, "JSON could not be parsed, buffer may have overflown: " +
+                        e.getMessage());
+                Log.e(LOG_TAG, "May have lost data points from request!");
+        } catch (IOException e) {
+            throw new CommunicationException("Could not parse the JSON message", e);
+        }
+
+        return received;
     }
 
     @Override

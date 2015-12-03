@@ -65,7 +65,7 @@ public class AlarmDialog {
             sb.append("Player (").append(alarm.getUID()).append(") crossed ").append(((DataCause) alarm.getCause()).getThreshold())
                     .append(" threshold at time ").append(alarm.getDate()).append("!");
         } else {
-            sb.append("Unknown alarm cause");
+            sb.append(alarm.getCause().getMessage());
         }
 
 
