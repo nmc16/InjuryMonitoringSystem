@@ -14,46 +14,40 @@ import android.widget.Toast;
 public class  ConnectionsActivity extends Activity {
 
     private EditText etIP, etPort;
-    private Button connect;
 
-
-    public static boolean ValidateIPAddress(String ipAddress)
+    public boolean ValidateIPAddress(String ipAddress)
     {
-
+        final int upperLim = 255;
+        final int lowerLim = 0;
+        final int ipLength = 4;
         String[] parts = ipAddress.split( "\\." );
 
         for ( String s : parts )
         {
             int i = Integer.parseInt( s );
-            if ( (i < 0) || (i > 255) )
+            if ( (i < lowerLim) || (i > upperLim) )
             {
                 return true;
             }
-
         }
-        if ( parts.length != 4 )
+        if ( parts.length != ipLength )
         {
             return true;
         }
-
         return false;
-
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main4);
+        final Button connect;
 
         etIP = (EditText) findViewById(R.id.ipAddressHost);
         etPort = (EditText) findViewById(R.id.portNumberHost);
         connect = (Button) findViewById(R.id.connectButton);
         final int upperPort = 9999;
         final int lowPort = 1000;
-
-
-
-
 
 
         connect.setOnClickListener(new View.OnClickListener() {
