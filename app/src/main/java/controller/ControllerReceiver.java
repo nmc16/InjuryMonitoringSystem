@@ -8,6 +8,7 @@ import sendable.DataType;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.DataCause;
+import sendable.alarm.TrainerCause;
 import sendable.data.Acceleration;
 import sendable.data.Position;
 import sendable.data.Request;
@@ -24,14 +25,22 @@ public class ControllerReceiver implements Runnable {
     private static final Logger LOG = Logger.getLogger("CLogger");
     private final double threshold;
     private final Socket client;
+    private final String emergIP;
+    private final int emergPort;
+    private Socket emergSocket, appSocket;
     private Database database;
     private Controller controller;
     private InputStream clientIn;
     private Position lastPosition;
 
-    public ControllerReceiver(double threshold, Socket client) {
+    public ControllerReceiver(double threshold, Socket client, String emergIP, 
+    		                  int emergPort, Socket appSocket) {
         this.threshold = threshold;
         this.client = client;
+        this.emergIP = emergIP;
+        this.emergPort = emergPort;
+        this.appSocket = appSocket;
+
     }
 
     private <T extends Sendable> Service createService(Class<T> clazz, Request request, int dataType) {
@@ -83,6 +92,10 @@ public class ControllerReceiver implements Runnable {
                     database.store(acceleration);
                 }
 
+            } else if (sendable instanceof Alarm) {
+            	if (((Alarm) sendable).getCause() instanceof TrainerCause) {
+            		controller.send((Alarm) sendable, emergSocket);
+            	}
             }
 
         } catch (ThresholdException e) {
@@ -94,7 +107,7 @@ public class ControllerReceiver implements Runnable {
 
             database.store(alarm);
 
-            controller.send(alarm, client);
+            controller.send(alarm, appSocket);
         }
     }
 
@@ -107,8 +120,15 @@ public class ControllerReceiver implements Runnable {
         try {
             database.connect();
             database.init();
+
+            // Connect to emergency station
+            LOG.info("Connecting to emergency station...");
+            emergSocket = controller.connectTo(emergIP, emergPort);
         } catch (DatabaseException e) {
             LOG.severe("Could not start database: " + e.getLocalizedMessage());
+            return;
+        } catch (CommunicationException e) {
+        	LOG.severe("Could not create connections to app/emergency station: " + e.getLocalizedMessage());
             return;
         }
 
