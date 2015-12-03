@@ -53,7 +53,7 @@ public class ControllerRunner {
 
                             // Check that the received list has the init signal with the correct UID
                             if (received != null && received.size() >= 1 && received.get(0) instanceof Initialization) {
-                                Initialization initialization = (Initialization) received.get(1);
+                                Initialization initialization = (Initialization) received.get(0);
 
                                 // Set the app socket to the client and move on
                                 if (initialization.getUID() == Controller.APP_UID) {
