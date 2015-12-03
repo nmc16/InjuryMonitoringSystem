@@ -26,6 +26,7 @@ import sendable.alarm.Alarm;
 import sendable.alarm.PlayerCause;
 
 
+
 /**
  * Main class that manages first Activity and creates other activities for the Android GUI.
  *
@@ -40,8 +41,12 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     public static final String CLIENT_IP = "clientip";
     public static final String CLIENT_PORT = "cleintport";
     public static String currentName;
-    private static List<Sendable> data;
+    public static List<Sendable> data;
     private static TableLayout table;
+
+    //ArrayList = new Arraylist<>();
+
+
 
     /**
      * Method that creates the main activity view and links its widgets to their listeners.
@@ -83,6 +88,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             public void onClick(View view) {
                 Intent i = new Intent(MainAppActivity.this, GraphActivity.class);
                 startActivity(i);
+
             }
         });
 
@@ -130,7 +136,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
      * a toast is created onscreen declaring the name selected.
      *
      */
-
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (view != null && parent != null) {
@@ -141,8 +146,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             //The selected name is assigned to a string variable to be used in the secondary activities
             currentName = playerChar.toString();
         }
-
-
 
     }
 
@@ -174,9 +177,8 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     public void onNothingSelected(AdapterView<?> parent) {
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
     }
-
+    //TODO fix this Richard
     public static void addData(List<Sendable> sendables) {
         data.addAll(sendables);
-
     }
 }
