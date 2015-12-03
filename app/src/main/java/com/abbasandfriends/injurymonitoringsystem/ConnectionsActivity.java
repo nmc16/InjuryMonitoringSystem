@@ -90,8 +90,6 @@ public class  ConnectionsActivity extends Activity {
                 Intent intent = new Intent();
                 intent.putExtra(MainAppActivity.HOST_IP, etIP.getText().toString());
                 intent.putExtra(MainAppActivity.HOST_PORT, etPort.getText().toString());
-                intent.putExtra(MainAppActivity.CLIENT_IP, "10.0.0.7");
-                intent.putExtra(MainAppActivity.CLIENT_PORT, "8008");
                 setResult(RESULT_OK, intent);
 
                 finish();

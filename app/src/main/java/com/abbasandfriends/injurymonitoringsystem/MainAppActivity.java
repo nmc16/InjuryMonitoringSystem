@@ -2,7 +2,9 @@ package com.abbasandfriends.injurymonitoringsystem;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,15 +17,18 @@ import android.app.Activity;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
 import com.abbasandfriends.injurymonitoringsystem.async.AsyncConnectionSetup;
-import com.abbasandfriends.injurymonitoringsystem.async.AsyncReceive;
+import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import exception.CommunicationException;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.PlayerCause;
+import sendable.data.Service;
 
 
 /**
@@ -37,11 +42,10 @@ import sendable.alarm.PlayerCause;
 public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener {
     public static final String HOST_IP = "hostip";
     public static final String HOST_PORT = "hostport";
-    public static final String CLIENT_IP = "clientip";
-    public static final String CLIENT_PORT = "cleintport";
     public static String currentName;
     private static List<Sendable> data;
     private static TableLayout table;
+    public static boolean dialogFlag = false;
 
     /**
      * Method that creates the main activity view and links its widgets to their listeners.
@@ -51,7 +55,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
+        dialogFlag = false;
         data = new ArrayList<Sendable>();
 
         setContentView(R.layout.activity_main);
@@ -154,10 +158,8 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             if (resultCode == RESULT_OK) {
                 String hostIP = data.getStringExtra(HOST_IP);
                 String hostPort = data.getStringExtra(HOST_PORT);
-                String clientIP = data.getStringExtra(CLIENT_IP);
-                String clientPort = data.getStringExtra(CLIENT_PORT);
 
-                String params[] = {hostIP, hostPort, clientIP, clientPort};
+                String params[] = {hostIP, hostPort};
                 new AsyncConnectionSetup().execute(params);
 
                 Activity aParams[] = {MainAppActivity.this};
@@ -179,4 +181,89 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         data.addAll(sendables);
 
     }
+
+    private class AsyncReceive extends AsyncTask<Activity, Void, List<Sendable>> {
+        private static final String LOG_TAG = "AsyncReceive";
+        private AlarmDialog alarmDialog;
+        private Activity params[];
+
+        @Override
+        protected List<Sendable> doInBackground(Activity... params) {
+            this.params = params;
+            // Attempt to get the connection from context
+            Object o = ContextHandler.get(ContextHandler.HANDLER);
+
+            // If it is valid, then attempt to send the request
+            try {
+                // Check the object is valid
+                if (o == null || !(o instanceof ConnectionHandler)) {
+                    Log.e(LOG_TAG, "Could not get connection handler from Context!");
+                    Thread.sleep(5000);
+                    return null;
+                }
+
+                ConnectionHandler connectionHandler = (ConnectionHandler) o;
+                Socket s = connectionHandler.getDataBaseReceive();
+                if (s == null) {
+                    Log.e(LOG_TAG, "Socket for database connection is null");
+                    Thread.sleep(5000);
+                    return null;
+                }
+                Log.d(LOG_TAG, "Waiting for data...");
+                List<Sendable> received = connectionHandler.receive(s);
+                Log.d(LOG_TAG, "Received data...");
+                return received;
+            } catch (CommunicationException e) {
+                Log.e(LOG_TAG, "Exception during receive: " + e.getLocalizedMessage() + "\n Cause: " +
+                        e.getCause().getMessage());
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                Log.e(LOG_TAG, "Interrupted during thread sleep!");
+
+            }
+
+            return null;
+        }
+
+        private void parse(List<Sendable> list) {
+            for (Sendable sendable : list) {
+                if (sendable instanceof Alarm) {
+                    displayAlarm((Alarm) sendable);
+                } else if (sendable instanceof Service) {
+                    decodeService(sendable);
+                } else {
+                    // Do nothing
+                }
+            }
+        }
+
+        private void displayAlarm(Alarm alarm) {
+            if (!dialogFlag) {
+                alarmDialog.create(alarm).show();
+                dialogFlag = true;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void decodeService(Sendable sendable) {
+            Service service = (Service) sendable;
+            List<Sendable> list = service.getData();
+            Log.d("AsyncReceive", list.toString());
+        }
+
+        @Override
+        protected void onPostExecute(List<Sendable> sendables) {
+            super.onPostExecute(sendables);
+            parse(sendables);
+            new AsyncReceive().execute(params);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            alarmDialog = new AlarmDialog(MainAppActivity.this);
+        }
+    }
 }
+
+

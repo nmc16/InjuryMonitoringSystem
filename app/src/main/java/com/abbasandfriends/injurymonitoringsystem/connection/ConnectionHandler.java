@@ -1,6 +1,7 @@
 package com.abbasandfriends.injurymonitoringsystem.connection;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
@@ -16,18 +17,19 @@ import java.util.Scanner;
 import controller.Consumer;
 import controller.Producer;
 import exception.CommunicationException;
+import json.SendableDeserializer;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 
 public class ConnectionHandler implements Consumer, Producer {
-
+    private static final int BUFFER_SIZE = 65536;
     private Socket server;
     private Socket dataBaseReceive;
     private Socket dataBaseRequest;
     private Gson gson;
 
     public ConnectionHandler() {
-        gson = new Gson();
+        gson = new GsonBuilder().registerTypeAdapter(Sendable.class, new SendableDeserializer()).create();
     }
 
     @Override
@@ -59,12 +61,17 @@ public class ConnectionHandler implements Consumer, Producer {
         try {
             // Get the input stream from the socket and read it into a string
             InputStream inputStream = clientSocket.getInputStream();
-            Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
 
-            if(!scanner.hasNext()) {
-                return null;
+            byte buffer[] = new byte[BUFFER_SIZE];
+            while (true) {
+                if(inputStream.read(buffer) != -1) {
+                    break;
+                }
             }
-            String msg = scanner.next();
+
+            String msg = new String(buffer);
+            System.out.println("MSG: " + msg);
+            msg = msg.replace("\u0000", "").replace("\\u0000", "");
 
             // Create readers to separate objects
             JsonReader jsonReader = new JsonReader(new StringReader(msg));
@@ -73,8 +80,8 @@ public class ConnectionHandler implements Consumer, Producer {
             // Add objects to list
             List<Sendable> received = new ArrayList<Sendable>();
             while(jsonReader.hasNext() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
-                Alarm alarm = gson.fromJson(jsonReader, Alarm.class);
-                received.add(alarm);
+                Sendable sendable = gson.fromJson(jsonReader, Sendable.class);
+                received.add(sendable);
             }
 
             return received;

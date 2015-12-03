@@ -12,7 +12,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 
+import controller.Controller;
 import exception.CommunicationException;
+import sendable.data.Initialization;
 
 public class AsyncConnectionSetup extends AsyncTask<String, Void, Boolean> {
     private static final String LOG_TAG = "AsyncConnectionSetup";
@@ -22,43 +24,28 @@ public class AsyncConnectionSetup extends AsyncTask<String, Void, Boolean> {
         ConnectionHandler connectionHandler = new ConnectionHandler();
 
         int hostPort = Integer.valueOf(params[1]);
-        int clientPort = Integer.valueOf(params[3]);
 
         // Set up the connections to the database and the client connection to database
         try {
-            // Set up the request socket for the connection
-            Log.d(LOG_TAG, "Setting up receive connection...");
-            Socket r = connectionHandler.connectTo(params[2], clientPort);
-            connectionHandler.setDataBaseRequest(r);
-
             // Set up the host connection for incoming alarms
             Log.d(LOG_TAG, "Setting up host connection...");
             InetAddress inetAddress = InetAddress.getByName(params[0]);
             Log.d(LOG_TAG, "Connecting to IP " + params[0]);
             connectionHandler.host(hostPort, inetAddress);
 
+            Socket host = connectionHandler.acceptClient();
+            connectionHandler.setDataBaseReceive(host);
+
+            Log.d(LOG_TAG, "Sending init message...");
+            connectionHandler.send(new Initialization(Controller.APP_UID, System.currentTimeMillis()), host);
+
+            // Set up the request socket for the connection
+            Log.d(LOG_TAG, "Setting up receive connection...");
+            Socket r = connectionHandler.connectTo(params[0], hostPort);
+            connectionHandler.setDataBaseRequest(r);
+
             // Add the connection handler to the context
             ContextHandler.add(ContextHandler.HANDLER, connectionHandler);
-
-            // Wait for client connection
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ConnectionHandler connectionHandler = (ConnectionHandler)ContextHandler.get(ContextHandler.HANDLER);
-
-                    try {
-                        Log.d(LOG_TAG, "Accepting client...");
-                        Socket s = connectionHandler.acceptClient();
-                        connectionHandler.setDataBaseReceive(s);
-                        ContextHandler.add(ContextHandler.HANDLER, connectionHandler);
-                        Log.d(LOG_TAG, "Accepted client.");
-
-                    } catch (CommunicationException e) {
-                        Log.e(LOG_TAG, "Could not accept client!");
-                    }
-                }
-            }).start();
-
             Log.d(LOG_TAG, "Finished.");
             return true;
 

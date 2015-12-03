@@ -43,8 +43,8 @@ public class AlarmDialog {
            sb.append("Player ").append(((PlayerCause) alarm.getCause()).getPlayerID())
                    .append(" pressed emergency button!");
         } else if (alarm.getCause() instanceof DataCause) {
-            sb.append("Data crossed ").append(((DataCause) alarm.getCause()).getThreshold())
-                    .append(" threshold!");
+            sb.append("Player (").append(alarm.getUID()).append(") ").append(((DataCause) alarm.getCause()).getThreshold())
+                    .append(" threshold at time ").append(alarm.getDate()).append("!");
         } else {
             sb.append("Unkown alarm cause");
         }
