@@ -28,6 +28,15 @@ import com.pi4j.wiringpi.Spi;
 
 import exception.CommunicationException;
 
+/**
+ * Object that implements the LED lights to turn on and blink when
+ * receiving a signal from the database.
+ * 
+ * Also implents a method to turn off the LED lights when the signal
+ * is received.
+ *
+ * @version 1
+ */
 public class EmergencySystem implements Consumer {
 	// creates global variables
 	private PiFace piFace;
