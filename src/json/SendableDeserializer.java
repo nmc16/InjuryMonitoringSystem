@@ -6,10 +6,7 @@ import sendable.DataType;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.Cause;
-import sendable.data.Acceleration;
-import sendable.data.Position;
-import sendable.data.Request;
-import sendable.data.Service;
+import sendable.data.*;
 import json.ServiceDeserializer;
 import json.CauseDeserializer;
 
@@ -42,6 +39,8 @@ public class SendableDeserializer implements JsonDeserializer<Sendable> {
             return gson.fromJson(jsonElement, Request.class);
         } else if (dataType == DataType.SERVICE) {
             return gson.fromJson(jsonElement, Service.class);
+        } else if (dataType == DataType.INIT) {
+            return gson.fromJson(jsonElement, Initialization.class);
         } else {
             throw new JsonParseException("Could not find object where data type is " + dataType);
         }
