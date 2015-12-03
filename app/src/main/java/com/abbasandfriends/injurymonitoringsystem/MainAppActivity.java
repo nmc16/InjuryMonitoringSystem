@@ -3,8 +3,11 @@ package com.abbasandfriends.injurymonitoringsystem;
 import android.app.AlertDialog;
 import android.app.Activity;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.os.AsyncTask;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -19,16 +22,17 @@ import android.widget.Toast;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
 import com.abbasandfriends.injurymonitoringsystem.async.AsyncConnectionSetup;
-import com.abbasandfriends.injurymonitoringsystem.async.AsyncReceive;
+import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import exception.CommunicationException;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.PlayerCause;
-
 
 
 /**
@@ -42,15 +46,11 @@ import sendable.alarm.PlayerCause;
 public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener {
     public static final String HOST_IP = "hostip";
     public static final String HOST_PORT = "hostport";
-    public static final String CLIENT_IP = "clientip";
-    public static final String CLIENT_PORT = "cleintport";
+    public static final String LOG_TAG = "MainAppActivity";
     public static String currentName;
     public static List<Sendable> data;
     private static TableLayout table;
-
-    //ArrayList = new Arraylist<>();
-
-
+    public static boolean dialogFlag = false;
 
     /**
      * Method that creates the main activity view and links its widgets to their listeners.
@@ -62,6 +62,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        dialogFlag = false;
         data = new ArrayList<Sendable>();
 
         final Spinner spinner;
@@ -70,6 +71,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         final Button warningInfo = (Button) findViewById(R.id.prevWarn);
         final Button emerg = (Button) findViewById(R.id.emerg);
         final Button request = (Button) findViewById(R.id.requestButton);
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
 
         table = (TableLayout) findViewById(R.id.dataTable);
 
@@ -79,10 +81,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
         animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
         animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
-        final MediaPlayer mp = MediaPlayer.create(this, R.raw.sirensound);
-
-
-
         setupButton.startAnimation(animation);
 
         spinner = (Spinner) findViewById((R.id.spinner));
@@ -99,7 +97,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
             public void onClick(View view) {
                 Intent i = new Intent(MainAppActivity.this, GraphActivity.class);
                 startActivity(i);
-
             }
         });
 
@@ -121,7 +118,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
                 AlertDialog alertDialog = new AlarmDialog(MainAppActivity.this).
                         create(new Alarm(10, System.currentTimeMillis(), new PlayerCause(10)));
                 alertDialog.show();
-
             }
 
         });
@@ -134,8 +130,6 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
                 alertDialog.show();
             }
         });
-
-
 
         setupButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,18 +162,19 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // Check that the data sent back is valid
         if (requestCode == 1 && data != null) {
             if (resultCode == RESULT_OK) {
+                // Get the ip and port from the last activity
                 String hostIP = data.getStringExtra(HOST_IP);
                 String hostPort = data.getStringExtra(HOST_PORT);
-                String clientIP = data.getStringExtra(CLIENT_IP);
-                String clientPort = data.getStringExtra(CLIENT_PORT);
 
-                String params[] = {hostIP, hostPort, clientIP, clientPort};
+                // Create the parameter list and start connection setup
+                String params[] = {hostIP, hostPort};
                 new AsyncConnectionSetup().execute(params);
 
-                Activity aParams[] = {MainAppActivity.this};
-                new AsyncReceive().execute(aParams);
+                // Start the receive thread
+                new AsyncReceive().execute();
             }
         }
     }
@@ -193,8 +188,93 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
     }
     //TODO fix this Richard
-    public static void addData(List<Sendable> sendables) {
-        data.addAll(sendables);
+    public static void addData(Sendable sendable) {
+        Log.d(LOG_TAG, "Received data from " + sendable.getUID() + " at " + sendable.getTime() +
+                " " + sendable.toString());
+        data.add(sendable);
     }
 
+    private class AsyncReceive extends AsyncTask<Void, Void, List<Sendable>> {
+        private static final String LOG_TAG = "AsyncReceive";
+        private AlarmDialog alarmDialog;
+        private boolean errorFlag = false;
+        private MediaPlayer mp;
+
+        @Override
+        protected List<Sendable> doInBackground(Void... params) {
+            // Attempt to get the connection from context
+            Object o = ContextHandler.get(ContextHandler.HANDLER);
+
+            // Set up the alarm sound
+            mp = MediaPlayer.create(getApplicationContext(), R.raw.sirensound);
+            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+            // If it is valid, then attempt to send the request
+            try {
+                // Check the object is valid
+                if (o == null || !(o instanceof ConnectionHandler)) {
+                    Log.e(LOG_TAG, "Could not get connection handler from Context!");
+                    Thread.sleep(5000);
+                    return null;
+                }
+
+                ConnectionHandler connectionHandler = (ConnectionHandler) o;
+                Socket s = connectionHandler.getDataBaseReceive();
+                if (s == null) {
+                    Log.e(LOG_TAG, "Socket for database connection is null");
+                    Thread.sleep(5000);
+                    return null;
+                }
+                Log.d(LOG_TAG, "Waiting for data...");
+                List<Sendable> received = connectionHandler.receive(s);
+                Log.d(LOG_TAG, "Received data...");
+                return received;
+            } catch (CommunicationException e) {
+                Log.e(LOG_TAG, "Exception during receive: " + e.getLocalizedMessage() + "\n Cause: " +
+                        e.getCause().getMessage());
+                e.printStackTrace();
+                errorFlag = true;
+            } catch (InterruptedException e) {
+                Log.e(LOG_TAG, "Interrupted during thread sleep!");
+            }
+
+            return null;
+        }
+
+        private void parse(List<Sendable> list) {
+            if (list == null) {
+                return;
+            }
+
+            for (Sendable sendable : list) {
+                if (sendable instanceof Alarm) {
+                    displayAlarm((Alarm) sendable);
+                }
+            }
+        }
+
+        private void displayAlarm(Alarm alarm) {
+            if (!dialogFlag) {
+                mp.start();
+                alarmDialog.create(alarm).show();
+                dialogFlag = true;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<Sendable> sendables) {
+            super.onPostExecute(sendables);
+            parse(sendables);
+
+            if (!errorFlag) {
+                new AsyncReceive().execute();
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            alarmDialog = new AlarmDialog(MainAppActivity.this);
+        }
+    }
 }

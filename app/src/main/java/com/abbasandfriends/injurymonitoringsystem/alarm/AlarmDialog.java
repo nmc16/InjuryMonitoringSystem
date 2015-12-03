@@ -3,6 +3,7 @@ package com.abbasandfriends.injurymonitoringsystem.alarm;
 import android.app.Activity;
 import android.app.AlertDialog;
 
+import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
 import com.abbasandfriends.injurymonitoringsystem.R;
 
 import sendable.alarm.Alarm;
@@ -43,8 +44,8 @@ public class AlarmDialog {
            sb.append("Player ").append(((PlayerCause) alarm.getCause()).getPlayerID())
                    .append(" pressed emergency button!");
         } else if (alarm.getCause() instanceof DataCause) {
-            sb.append("Data crossed ").append(((DataCause) alarm.getCause()).getThreshold())
-                    .append(" threshold!");
+            sb.append("Player (").append(alarm.getUID()).append(") crossed ").append(((DataCause) alarm.getCause()).getThreshold())
+                    .append(" threshold at time ").append(alarm.getDate()).append("!");
         } else {
             sb.append("Unknown alarm cause");
         }

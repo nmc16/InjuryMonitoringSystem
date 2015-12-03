@@ -152,4 +152,10 @@ public class Acceleration implements Sendable {
         result = 37 * result + accelMag;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Accel: X = " + xAccel + ", Y = " + yAccel + ", Z = " + zAccel + "Magnitude = " +
+                accelMag;
+    }
 }

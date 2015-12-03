@@ -29,7 +29,7 @@ import static java.lang.Math.pow;
  * @version 1
  */
 public class Controller implements Producer, Consumer {
-
+    public static final int APP_UID = 69420;
     private static final int BUFFER_SIZE = 65536;
     private Gson gson;
     private double threshold;
