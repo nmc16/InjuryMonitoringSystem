@@ -58,6 +58,7 @@ public class ControllerRunner {
                                 // Set the app socket to the client and move on
                                 if (initialization.getUID() == Controller.APP_UID) {
                                     appSocket = client;
+                                    LOG.info("Connected to GUI...");
                                 }
                             }
                         } else {
