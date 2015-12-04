@@ -70,7 +70,7 @@ public class EmergencySystem implements Consumer {
 		ledList.add(PiFaceLed.LED6);
 		ledList.add(PiFaceLed.LED7);
 		
-		// Reset all the LEDs in that list so they turn off
+		// Reset all the LEDs in that list to turn off
 		for (PiFaceLed led : ledList) {
 			piFace.getLed(led).off();
 		}
@@ -94,7 +94,7 @@ public class EmergencySystem implements Consumer {
 		this.hostPort=clientPort;
 	}
 
-	  /**
+	 /**
      * @see Consumer#host(int, InetAddress)
      */
 	@Override
@@ -161,7 +161,6 @@ public class EmergencySystem implements Consumer {
                 Sendable parsedObj = gson.fromJson(jsonReader, Sendable.class);
                 received.add(parsedObj);
             }
-
             return received;
 			
 		} catch (IOException e) {
@@ -181,7 +180,13 @@ public class EmergencySystem implements Consumer {
             throw new CommunicationException("Could not close server socket", e);
         }
 	}
-	
+
+	/**
+     * method that handles when a signal is being received and allows the
+     * lights to turn on
+     *
+     * When the button is clicked, it turns off the light(s)
+     */
 	public void handleEmergency(Sendable sendable) {
 		if (index > ledList.size() - 1) {
 			return;
@@ -190,7 +195,7 @@ public class EmergencySystem implements Consumer {
 		// Get led from the off list and add it to the on list
 		final PiFaceLed led = ledList.get(index);
 		piFace.getLed(led).blink(LED_ON);
-	        index++;
+	    index++;
 	
 		piFace.getSwitch(PiFaceSwitch.S1).addListener(new SwitchListener() {
 			@Override
@@ -230,7 +235,7 @@ public class EmergencySystem implements Consumer {
 		emergency.host(emergency.getHostPort(),ip);
 
 		while(true) {
-				// accept client 
+				// socket is created and initialized 
 				Socket socket = emergency.acceptClient();	
 				LOG.info("Device connected!");
 
