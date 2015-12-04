@@ -22,7 +22,6 @@ import java.util.Date;
 @Table(name = "ACCELDATA")
 public class Acceleration implements Sendable {
     private final int type;
-    private DecimalFormat df;
 	private int tableID;
     private int uid;
     private long time;
@@ -43,7 +42,6 @@ public class Acceleration implements Sendable {
         this.zAccel = zAccel;
         this.accelMag = accelMag;
         this.type =  DataType.ACCEL;
-        df = new DecimalFormat("#.#");
     }
 
     @Column(name = "X_ACCEL", nullable = false)
@@ -154,7 +152,7 @@ public class Acceleration implements Sendable {
 
     @Override
     public String toString() {
-        return "X=" + df.format(xAccel) + ", Y=" + df.format(yAccel) + ", Z=" + df.format(zAccel) +
-                ", M=" + df.format(accelMag);
+        return "X=" + DoubleFormatter.format(xAccel) + ", Y=" + DoubleFormatter.format(yAccel) +
+               ", Z=" + DoubleFormatter.format(zAccel) + ", M=" + DoubleFormatter.format(accelMag);
     }
 }

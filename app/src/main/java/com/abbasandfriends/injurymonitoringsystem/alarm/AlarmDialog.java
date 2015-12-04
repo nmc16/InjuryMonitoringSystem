@@ -42,28 +42,27 @@ public class AlarmDialog {
 
         // Create a new string based on the cause of the alarm
         StringBuilder sb = new StringBuilder("Cause: ");
-        if (alarm.getCause() instanceof PlayerCause) {
+        if (alarm.getCause() instanceof DataCause) {
             //hardcoded for simplicity
             //In reality an arraylist initializer would be preferred
-            if (((PlayerCause) alarm.getCause()).getPlayerID() == 1){
+            if (alarm.getUID() == 1){
                 currentPlayer = "Charlie";
-            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 2){
+            } else if (alarm.getUID() == 2){
                 currentPlayer = "Luke";
-            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 3){
+            } else if (alarm.getUID() == 3){
                 currentPlayer = "Nic";
-            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 4){
+            } else if (alarm.getUID() == 4){
                 currentPlayer = "Abbas";
-            } else if (((PlayerCause) alarm.getCause()).getPlayerID() == 10){
+            } else if (alarm.getUID() == 10){
                 currentPlayer = "Trainer";
             }
             else {
-                currentPlayer = (((PlayerCause) alarm.getCause()).getPlayerID()) + "";
+                currentPlayer = alarm.getUID() + "";
             }
-            sb.append("Player ").append(currentPlayer).append(" pressed emergency button!");
+            sb.append("Player ").append(currentPlayer).append(") crossed ")
+                    .append(((DataCause) alarm.getCause()).getThreshold())
+                    .append(" threshold at time ").append(alarm.getDate()).append("!");;
 
-        } else if (alarm.getCause() instanceof DataCause) {
-            sb.append("Player (").append(alarm.getUID()).append(") crossed ").append(((DataCause) alarm.getCause()).getThreshold())
-                    .append(" threshold at time ").append(alarm.getDate()).append("!");
         } else {
             sb.append(alarm.getCause().getMessage());
         }

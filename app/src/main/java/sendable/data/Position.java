@@ -130,4 +130,10 @@ public class Position implements Sendable {
         result = (int) (37 * result + zPos);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "X=" + DoubleFormatter.format(xPos) + ", Y=" + DoubleFormatter.format(yPos) +
+               ", Z=" + DoubleFormatter.format(zPos);
+    }
 }

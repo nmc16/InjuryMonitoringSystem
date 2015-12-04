@@ -61,4 +61,9 @@ public class Cause {
         result = 37 * result + (message != null ? message.hashCode(): 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return message;
+    }
 }

@@ -61,4 +61,9 @@ public class PlayerCause extends Cause {
         result = 37 * result + playerID;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Player " + playerID + " pressed emergency";
+    }
 }
