@@ -56,17 +56,17 @@ public class Database {
                                 "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                                 " PLAYERID INT NOT NULL," +
                                 " TIME BIGINT NOT NULL," +
-                                " X_ACCEL INT NOT NULL," +
-                                " Y_ACCEL INT NOT NULL," +
-                                " Z_ACCEL INT NOT NULL," +
-                                " ACCEL INT NOT NULL)");
+                                " X_ACCEL DOUBLE PRECISION NOT NULL," +
+                                " Y_ACCEL DOUBLE PRECISION NOT NULL," +
+                                " Z_ACCEL DOUBLE PRECISION NOT NULL," +
+                                " ACCEL DOUBLE PRECISION NOT NULL)");
         tables.put("POSDATA", "CREATE TABLE POSDATA " +
                               "(INDEX INT NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                               " PLAYERID INT NOT NULL," +
                               " TIME BIGINT NOT NULL," +
-                              " X_POS INT NOT NULL," +
-                              " Y_POS INT NOT NULL," +
-                              " Z_POS INT NOT NULL)");
+                              " X_POS DOUBLE PRECISION NOT NULL," +
+                              " Y_POS DOUBLE PRECISION NOT NULL," +
+                              " Z_POS DOUBLE PRECISION NOT NULL)");
 
         // Create the factory for entity manager creation
         factory = Persistence.createEntityManagerFactory("sdb");

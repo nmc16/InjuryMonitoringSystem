@@ -24,21 +24,17 @@ public class Acceleration implements Sendable {
 	private int tableID;
     private int uid;
     private long time;
-    private int xAccel;
-    private int yAccel;
-    private int zAccel;
-    private int accelMag;
+    private double xAccel;
+    private double yAccel;
+    private double zAccel;
+    private double accelMag;
 
     public Acceleration() {
         this(0, 0, 0, 0, 0, 0);
     }
 
-    public Acceleration(int uid, long time, int xAccel, int yAccel, int zAccel, double accelMag) {
-        this(uid, time, xAccel, yAccel, zAccel, (int) accelMag);
-    }
-
-    public Acceleration(int uid, long time, int xAccel, int yAccel, int zAccel, int accelMag) {
-        this.uid = uid;
+    public Acceleration(int uid, long time, double xAccel, double yAccel, double zAccel, double accelMag) {
+    	this.uid = uid;
         this.time = time;
         this.xAccel = xAccel;
         this.yAccel = yAccel;
@@ -48,38 +44,38 @@ public class Acceleration implements Sendable {
     }
 
     @Column(name = "X_ACCEL", nullable = false)
-    public int getxAccel() {
+    public double getxAccel() {
         return xAccel;
     }
 
-    public void setxAccel(int xAccel) {
+    public void setxAccel(double xAccel) {
         this.xAccel = xAccel;
     }
 
     @Column(name = "Y_ACCEL", nullable = false)
-    public int getyAccel() {
+    public double getyAccel() {
         return yAccel;
     }
 
-    public void setyAccel(int yAccel) {
+    public void setyAccel(double yAccel) {
         this.yAccel = yAccel;
     }
 
     @Column(name = "Z_ACCEL", nullable = false)
-    public int getzAccel() {
+    public double getzAccel() {
         return zAccel;
     }
 
-    public void setzAccel(int zAccel) {
+    public void setzAccel(double zAccel) {
         this.zAccel = zAccel;
     }
 
     @Column(name = "ACCEL", nullable = false)
-    public int getAccelMag() {
+    public double getAccelMag() {
         return accelMag;
     }
 
-    public void setAccelMag(int accelMag) {
+    public void setAccelMag(double accelMag) {
         this.accelMag = accelMag;
     }
 
@@ -146,10 +142,10 @@ public class Acceleration implements Sendable {
         int result = 11;
         result = 37 * result + uid;
         result = 37 * result + Long.valueOf(time).hashCode();
-        result = 37 * result + xAccel;
-        result = 37 * result + yAccel;
-        result = 37 * result + zAccel;
-        result = 37 * result + accelMag;
+        result = (int) (37 * result + xAccel);
+        result = (int) (37 * result + yAccel);
+        result = (int) (37 * result + zAccel);
+        result = (int) (37 * result + accelMag);
         return result;
     }
 }
