@@ -40,7 +40,20 @@ public class RequestListener implements DialogInterface.OnClickListener {
 
         // Send the alarm to the database
         ConnectionHandler connectionHandler = (ConnectionHandler) o;
-        Alarm alarm = new Alarm(420, System.currentTimeMillis(), new TrainerCause(Priority.MODERATE));
+
+        // Set the id of the player
+        int id = 0;
+        if (MainAppActivity.currentName.equals("Charlie")) {
+            id = 1;
+        } else if (MainAppActivity.currentName.equals("Luke")) {
+            id = 2;
+        } else if (MainAppActivity.currentName.equals("Nic")) {
+            id = 3;
+        } else {
+            id = 4;
+        }
+
+        Alarm alarm = new Alarm(id, System.currentTimeMillis(), new TrainerCause(Priority.MODERATE));
         Log.d(LOG_TAG, "Sending the alarm to the database...");
         try {
             Socket socket = connectionHandler.getDataBaseRequest();
