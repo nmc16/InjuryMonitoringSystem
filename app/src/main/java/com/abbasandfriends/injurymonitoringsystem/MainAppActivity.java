@@ -8,7 +8,9 @@ import android.os.AsyncTask;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -17,15 +19,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.abbasandfriends.injurymonitoringsystem.alarm.AlarmDialog;
 import com.abbasandfriends.injurymonitoringsystem.async.AsyncConnectionSetup;
+import com.abbasandfriends.injurymonitoringsystem.async.AsyncListener;
 import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 import com.abbasandfriends.injurymonitoringsystem.request.RequestDialog;
 
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +39,6 @@ import exception.CommunicationException;
 import sendable.Sendable;
 import sendable.alarm.Alarm;
 import sendable.alarm.Cause;
-import sendable.alarm.PlayerCause;
-import sendable.alarm.Priority;
-import sendable.alarm.TrainerCause;
-
 
 /**
  * Main class that manages first Activity and creates other activities for the Android GUI.
@@ -46,7 +48,7 @@ import sendable.alarm.TrainerCause;
  *
  * @version 2
  */
-public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener {
+public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener, AsyncListener {
     public static final String HOST_IP = "hostip";
     public static final String HOST_PORT = "hostport";
     public static final String LOG_TAG = "MainAppActivity";
@@ -54,7 +56,7 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     public static List<Sendable> data;
     private static TableLayout table;
     public static boolean dialogFlag = false;
-
+    private DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
 
     /**
@@ -130,7 +132,8 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
         request.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RequestDialog requestDialog = new RequestDialog(MainAppActivity.this);
+                RequestDialog requestDialog = new RequestDialog(MainAppActivity.this,
+                                                                MainAppActivity.this);
                 AlertDialog alertDialog = requestDialog.create();
                 alertDialog.show();
             }
@@ -196,11 +199,45 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     public void onNothingSelected(AdapterView<?> parent) {
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
     }
-    //TODO fix this Richard
-    public static void addData(Sendable sendable) {
-        Log.d(LOG_TAG, "Received data from " + sendable.getUID() + " at " + sendable.getTime() +
-                " " + sendable.toString());
+
+    public void addData(Sendable sendable) {
+        // Add to the data
         data.add(sendable);
+
+        // Add a table row for the new data
+        TableRow tableRow = new TableRow(MainAppActivity.this);
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT);
+        tableRow.setLayoutParams(layoutParams);
+
+        // Add the UID
+        TextView uid = new TextView(MainAppActivity.this);
+        uid.setLayoutParams(new TableRow.LayoutParams(50, 60, 1));
+        uid.setText(Integer.toString(sendable.getUID()));
+        uid.setGravity(Gravity.CENTER);
+        tableRow.addView(uid);
+
+        // Add Type
+        TextView type = new TextView(MainAppActivity.this);
+        type.setLayoutParams(new TableRow.LayoutParams(50, 60, 1));
+        type.setText(Integer.toString(sendable.getType()));
+        type.setGravity(Gravity.CENTER);
+        tableRow.addView(type);
+
+        // Add the values of the sendable object from toString
+        TextView data = new TextView(MainAppActivity.this);
+        data.setLayoutParams(new TableRow.LayoutParams(50, 60, 1));
+        data.setText(sendable.toString());
+        data.setGravity(Gravity.CENTER);
+        tableRow.addView(data);
+
+        // Add the time to the table
+        TextView date = new TextView(MainAppActivity.this);
+        date.setLayoutParams(new TableRow.LayoutParams(50, 60, 1));
+        date.setText(dateFormat.format(sendable.getDate()));
+        date.setGravity(Gravity.CENTER);
+        tableRow.addView(date);
+
+        table.addView(tableRow);
     }
 
     private class AsyncReceive extends AsyncTask<Void, Void, List<Sendable>> {

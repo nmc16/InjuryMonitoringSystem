@@ -55,8 +55,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/scrollView"
         android:layout_below="@+id/prevWarn"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_above="@+id/setupButton"
+        android:layout_alignParentLeft="true">
 
         <TableLayout android:id="@+id/dataTable"
                      android:layout_width="fill_parent"

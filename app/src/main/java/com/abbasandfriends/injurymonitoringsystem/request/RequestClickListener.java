@@ -4,21 +4,14 @@ package com.abbasandfriends.injurymonitoringsystem.request;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.abbasandfriends.injurymonitoringsystem.ContextHandler;
-import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
+import com.abbasandfriends.injurymonitoringsystem.async.AsyncListener;
 import com.abbasandfriends.injurymonitoringsystem.async.AsyncRequest;
-import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 
-import java.net.Socket;
-import java.util.concurrent.Executor;
-
-import exception.CommunicationException;
 import sendable.DataType;
 import sendable.data.Request;
 
@@ -39,17 +32,20 @@ public class RequestClickListener implements View.OnClickListener {
     private final EditText playerID;
     private final Spinner spinner;
     private final Activity activity;
+    private final AsyncListener listener;
     private final Dialog dialog;
     private Request request;
 
     public RequestClickListener(Dialog dialog, EditText startTime, EditText endTime,
-                                EditText playerID, Spinner spinner, Activity activity) {
+                                EditText playerID, Spinner spinner, Activity activity,
+                                AsyncListener listener) {
         this.dialog = dialog;
         this.startTime = startTime;
         this.endTime = endTime;
         this.playerID = playerID;
         this.spinner = spinner;
         this.activity = activity;
+        this.listener = listener;
         this.request = new Request();
     }
 
@@ -84,7 +80,7 @@ public class RequestClickListener implements View.OnClickListener {
             request.setTime(System.currentTimeMillis());
 
             // Send a request from the main activity
-            Request params[] = {request};
+            Object params[] = {request, listener};
             new AsyncRequest().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, params);
 
             // Dismiss the dialog box
