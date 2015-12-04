@@ -2,24 +2,23 @@ package controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import com.google.gson.*;
 import exception.CommunicationException;
 import sendable.Sendable;
 import sendable.data.Acceleration;
 import exception.ThresholdException;
 import sendable.data.Position;
+import json.SendableDeserializer;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import com.google.gson.Gson;
 
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
@@ -30,34 +29,43 @@ import static java.lang.Math.pow;
  * @version 1
  */
 public class Controller implements Producer, Consumer {
-
-	private static final int BUFFER_SIZE = 65536;
-	private Gson gson = new Gson();
-    private InputStream inputStream;
-    private OutputStream outputStream;
+    public static final int APP_UID = 69420;
+    private static final int BUFFER_SIZE = 65536;
+    private Gson gson;
     private double threshold;
     private ServerSocket server;
-    private Socket clientSocket;
-    private Socket inputSocket;
     
     public Controller(double threshold) {
         this.threshold = threshold;
+        gson = new GsonBuilder().registerTypeAdapter(Sendable.class, new SendableDeserializer()).create();
     }
 
+    /**
+     * Calculates the acceleration given two positions from the accelerometer.
+     *
+     * The result is an {@link Acceleration} class that holds the magnitudes
+     * of all the component accelerations and the total magnitude.
+     *
+     * @param p1 Starting position from the sensor
+     * @param p2 Final position of the senser
+     * @return Acceleration object holding the magnitudes of the components
+     * @throws ThresholdException Thrown if calculation crosses the threshold defined in constructor
+     */
     public Acceleration calculate(Position p1, Position p2) throws ThresholdException {
         // Calculate the acceleration sendable
-        int deltaX = p2.getxPos() - p1.getxPos();
-        int deltaY = p2.getyPos() - p1.getyPos();
-        int deltaZ = p2.getzPos() - p1.getzPos();
+    	double deltaX = p2.getxPos() - p1.getxPos();
+    	double deltaY = p2.getyPos() - p1.getyPos();
+    	double deltaZ = p2.getzPos() - p1.getzPos();
 
-        int xAccel = (int) (deltaX / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
-        int yAccel = (int) (deltaY / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
-        int zAccel = (int) (deltaZ / ((p2.getTime().getTime() - p1.getTime().getTime()) / 1000));
+    	double xAccel = deltaX / ((p2.getTime() - p1.getTime()) / 1000.0);
+    	double yAccel = deltaY / ((p2.getTime() - p1.getTime()) / 1000.0);
+    	double zAccel = deltaZ / ((p2.getTime() - p1.getTime()) / 1000.0);
 
         double accel = sqrt(pow(deltaX, 2) + pow(deltaY, 2) + pow(deltaZ, 2));
 
         if (accel >= threshold) {
-            throw new ThresholdException("Threshold value exceeded: " + accel);
+            throw new ThresholdException("Threshold value exceeded: " + accel,
+                                         new Acceleration(p2.getUID(), p2.getTime(), xAccel, yAccel, zAccel, accel));
         }
 
         // Create new DB Data object with new acceleration sendable and return
@@ -65,11 +73,14 @@ public class Controller implements Producer, Consumer {
     }
 
     /**
-     * @see Consumer#receive(Class)
+     * @see Consumer#receive(InputStream)
      */
 	@Override
-	public <T extends Sendable> List<T> receive(Class<T> sendable) throws CommunicationException {
+	public List<Sendable> receive(Socket clientSocket) throws CommunicationException {
 		try {
+			// Get the input stream from the socket
+			InputStream inputStream = clientSocket.getInputStream();
+			
             // Write the bytes on the socket buffer until the EOF is reached
 			byte buffer[] = new byte[BUFFER_SIZE];
 			while (true) {
@@ -78,19 +89,19 @@ public class Controller implements Producer, Consumer {
                 }
             }
 
-            // Remove all the NUL characters from the string
-			String msg = new String(buffer);
+            // Remove all the NULL characters from the string
+            String msg = new String(buffer);
             msg = msg.replace("\u0000", "").replace("\\u0000", "");
 
-            // Create json reader to read the seperate objects from the string
+            // Create JSON reader to read the separate objects from the string
             JsonReader jsonReader = new JsonReader(new StringReader(msg));
             jsonReader.setLenient(true);
 
             // Add the objects to the list until the end document token is received
-            List<T> received = new ArrayList<T>();
+            List<Sendable> received = new ArrayList<Sendable>();
             while (jsonReader.hasNext() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
-                T t = gson.fromJson(jsonReader, sendable);
-                received.add(t);
+                Sendable parsedObj = gson.fromJson(jsonReader, Sendable.class);
+                received.add(parsedObj);
             }
 
             return received;
@@ -102,12 +113,12 @@ public class Controller implements Producer, Consumer {
 	}
 
     /**
-     * @see Producer#send(Sendable)
+     * @see Producer#send(Sendable, Socket)
      */
     @Override
-	public void send(Sendable sendable) throws CommunicationException {
+	public void send(Sendable sendable, Socket client) throws CommunicationException {
         // Check that there is a client to write to
-        if (clientSocket == null || clientSocket.isClosed()) {
+        if (client == null || client.isClosed()) {
             throw new CommunicationException("Client socket not open to write to! Check that you have called" +
                                              "connectTo() method.");
         }
@@ -117,18 +128,18 @@ public class Controller implements Producer, Consumer {
 		try {
             // Convert to byte array and write to the socket
 			byte buffer[] = msg.getBytes();
-			outputStream.write(buffer);
+			client.getOutputStream().write(buffer);
 
-		} catch (IOException e) {
-			throw new CommunicationException("Could not write to client output buffer", e);
+        } catch (IOException e) {
+            throw new CommunicationException("Could not write to client output buffer", e);
 		}
 	}
 
     /**
-     * @see Consumer#host(int)
+     * @see Consumer#host(int, InetAddress)
      */
 	@Override
-	public void host(int hostPort) throws CommunicationException {
+	public void host(int hostPort, InetAddress ip) throws CommunicationException {
 		// Check that the socket is not already open
 		if (server != null && !server.isClosed()) {
 			throw new CommunicationException("Socket was not closed before trying to host!");
@@ -136,14 +147,30 @@ public class Controller implements Producer, Consumer {
 		
 		// Start the server and create the input socket
 		try {
-			server = new ServerSocket(hostPort);
-			inputSocket = server.accept();
-            inputStream = inputSocket.getInputStream();
+			server = new ServerSocket(hostPort, 50, ip);
 
 		} catch (IOException e) {
 			throw new CommunicationException("Could not open server socket or input stream", e);
 		}
 	}
+
+	/**
+	 * @see Consumer#acceptClient()
+	 */
+	@Override
+    public Socket acceptClient() throws CommunicationException {
+        // Check that the socket is not already open
+        if (server == null || server.isClosed()) {
+            throw new CommunicationException("Host socket is closed!");
+        }
+
+        // Start the server and create the input socket
+        try {
+            return server.accept();
+        } catch (IOException e) {
+            throw new CommunicationException("Could not open server socket or input stream", e);
+        }
+    }
 
     /**
      * @see Consumer#disconnectHost()
@@ -151,14 +178,6 @@ public class Controller implements Producer, Consumer {
 	@Override
 	public void disconnectHost() throws CommunicationException {
         try {
-            // Close the input stream and the socket
-            inputStream.close();
-
-            // If the socket is still open close it
-            if (!inputSocket.isClosed()) {
-                inputSocket.close();
-            }
-
             // Close server socket
             server.close();
 
@@ -171,16 +190,11 @@ public class Controller implements Producer, Consumer {
      * @see Producer#connectTo(String, int)
      */
 	@Override
-	public void connectTo(String clientIP, int clientPort) throws CommunicationException {
-        // Check that the socket is not already open
-		if (clientSocket != null && !clientSocket.isClosed()) {
-			throw new CommunicationException("Client socket not closed before operation!");
-		}
+	public Socket connectTo(String clientIP, int clientPort) throws CommunicationException {
 		
 		try {
             // Open the client and save the output stream to write to
-			clientSocket = new Socket(clientIP, clientPort);
-            outputStream = clientSocket.getOutputStream();
+			return new Socket(clientIP, clientPort);
 
 		} catch (IOException e) {
 			throw new CommunicationException("Could not set up client socket", e);
@@ -188,13 +202,13 @@ public class Controller implements Producer, Consumer {
 	}
 
     /**
-     * @see Producer#disconnectFromClient()
+     * @see Producer#disconnectFromClient(Socket)
      */
 	@Override
-	public void disconnectFromClient() throws CommunicationException {
+	public void disconnectFromClient(Socket clientSocket) throws CommunicationException {
 		try {
             // Close the output stream, should also close socket
-            outputStream.close();
+            clientSocket.getOutputStream().close();
 
             // If the socket was not closed then close it
             if (!clientSocket.isClosed()) {

@@ -1,5 +1,6 @@
 package sendable.data;
 
+import sendable.DataType;
 import sendable.Sendable;
 
 import javax.persistence.*;
@@ -14,50 +15,57 @@ import java.util.Date;
 @Entity
 @Table(name = "POSDATA")
 public class Position implements Sendable {
+    private final int type;
     private int tableID;
     private int uid;
-    private Date time;
-    private int xPos;
-    private int yPos;
-    private int zPos;
+    private long time;
+    private double xPos;
+    private double yPos;
+    private double zPos;
 
     public Position() {
-        this(0, new Date(), 0, 0, 0);
+        this(0, 0, 0, 0, 0);
     }
 
-    public Position(int uid, Date time, int xPos, int yPos, int zPos) {
+    public Position(int uid, long time, double xPos, double yPos, double zPos) {
         this.uid = uid;
         this.time = time;
         this.xPos = xPos;
         this.yPos = yPos;
         this.zPos = zPos;
+        this.type = DataType.POS;
     }
 
     @Column(name = "X_POS", nullable = false)
-    public int getxPos() {
+    public double getxPos() {
         return xPos;
     }
 
-    public void setxPos(int xPos) {
+    public void setxPos(double xPos) {
         this.xPos = xPos;
     }
 
     @Column(name = "Y_POS", nullable = false)
-    public int getyPos() {
+    public double getyPos() {
         return yPos;
     }
 
-    public void setyPos(int yPos) {
+    public void setyPos(double yPos) {
         this.yPos = yPos;
     }
 
     @Column(name = "Z_POS", nullable = false)
-    public int getzPos() {
+    public double getzPos() {
         return zPos;
     }
 
-    public void setzPos(int zPos) {
+    public void setzPos(double zPos) {
         this.zPos = zPos;
+    }
+
+    @Override
+    public int getType() {
+        return type;
     }
 
     @Override
@@ -66,7 +74,7 @@ public class Position implements Sendable {
     }
 
     @Override
-    public void setTime(Date time) {
+    public void setTime(long time) {
         this.time = time;
     }
 
@@ -77,10 +85,14 @@ public class Position implements Sendable {
     }
 
     @Override
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "TIME", nullable = false)
-    public Date getTime() {
+    public long getTime() {
         return time;
+    }
+
+    @Override
+    public Date getDate() {
+        return new Date(time);
     }
 
     @Id
@@ -105,17 +117,17 @@ public class Position implements Sendable {
                xPos == position.getxPos() &&
                yPos == position.getyPos() &&
                zPos == position.getzPos() &&
-               time != null ? time.equals(position.getTime()) : position.getTime() == null;
+               time == position.getTime();
     }
 
     @Override
     public int hashCode() {
         int result = 11;
         result = 37 * result + uid;
-        result = 37 * result + (time != null ? time.hashCode() : 0);
-        result = 37 * result + xPos;
-        result = 37 * result + yPos;
-        result = 37 * result + zPos;
+        result = 37 * result + Long.valueOf(time).hashCode();
+        result = (int) (37 * result + xPos);
+        result = (int) (37 * result + yPos);
+        result = (int) (37 * result + zPos);
         return result;
     }
 }
