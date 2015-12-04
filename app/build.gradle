@@ -1,0 +1,58 @@
+apply plugin: 'com.android.application'
+
+android {
+    configurations {
+        all*.exclude group: 'javax', module: 'persistence'
+    }
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+    defaultConfig {
+        applicationId "com.abbasandfriends.injurymonitoringsystem"
+        minSdkVersion 17
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+    }
+    sourceSets {
+        main {
+            java {
+                exclude '**/Player.java'
+                exclude '**/EmergencySystem.java'
+                exclude '**/EmergencyRunner.java'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['mpandroidchartlibrary-2-1-6.jar'])
+    compile 'com.android.support:design:23.1.0'
+    compile('com.google.code.gson:gson:2.5') {
+        exclude module: 'javax'
+        exclude module: 'persistence'
+    }
+    compile('junit:junit:4.12') {
+        exclude module: 'javax'
+        exclude module: 'persistence'
+    }
+    compile 'org.eclipse.persistence:javax.persistence:2.1.0'
+}
+
+
+
