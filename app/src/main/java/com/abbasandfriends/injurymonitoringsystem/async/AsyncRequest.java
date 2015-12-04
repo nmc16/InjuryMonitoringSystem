@@ -1,12 +1,10 @@
 package com.abbasandfriends.injurymonitoringsystem.async;
 
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.abbasandfriends.injurymonitoringsystem.ContextHandler;
-import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
 import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 
 import java.net.Socket;
@@ -17,6 +15,13 @@ import sendable.Sendable;
 import sendable.data.Request;
 import sendable.data.Service;
 
+/**
+ * Class to handle asynchronous requests to the database for data.
+ *
+ * The parameters must be ordered specifically:
+ *      param[0]: the request object created to send to the database
+ *      param[1]: the AsyncListener implementation to call addData on
+ */
 public class AsyncRequest extends AsyncTask<Object, Void, List<Sendable>> {
     private static final String LOG_TAG = "AsyncRequest";
     private AsyncListener listener;
