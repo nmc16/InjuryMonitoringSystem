@@ -45,6 +45,7 @@ public class GraphActivity extends android.app.Activity {
         }
         else{
             Toast.makeText(this, "Please request data", Toast.LENGTH_LONG).show();
+
         }
 
     }
@@ -55,30 +56,42 @@ public class GraphActivity extends android.app.Activity {
     private ArrayList<BarDataSet> getDataSet() {
         ArrayList<BarDataSet> dataSets = null;
         ArrayList<BarEntry> valueSet1 = new ArrayList<>();
+        ArrayList<BarEntry> valueSet2 = new ArrayList<>();
+
 
         for (int i = 0; i < graphActivity.size(); i++)
         {
             if (graphActivity.get(i) instanceof Acceleration) {
                 Acceleration a = (Acceleration) graphActivity.get(i);
-                float accel = (float)a.getAccelMag();
+                float accel = (float) a.getAccelMag();
                 BarEntry v1e1 = new BarEntry(accel, i);
-                valueSet1.add(v1e1);
+                if(graphActivity.get(i).getUID() == 1) {
+                    valueSet1.add(v1e1);
+                }
+                else{
+                    valueSet2.add(v1e1);
+                }
             }
         }
-        BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Change in Acceleration");
+        BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Player 1 Acceleration");
+        BarDataSet barDataSet2 = new BarDataSet(valueSet2, "Player 2 Acceleration");
 
         //Default color so the graph won't crash
         barDataSet1.setColor(Color.rgb(155, 0, 0));
+        barDataSet2.setColor(Color.rgb(0,0,155));
 
 
         //Changes the colour of the graph according to the player
+        /*
         for (int i = 0; i < graphActivity.size(); i++){
             int colorRatio = graphActivity.get(i).getUID()*graphActivity.get(i).getUID();
             barDataSet1.setColor(Color.rgb(255/colorRatio, 0, 2*colorRatio));
         }
+        */
 
         dataSets = new ArrayList<>();
         dataSets.add(barDataSet1);
+        dataSets.add(barDataSet2);
 
         return dataSets;
 
