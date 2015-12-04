@@ -19,15 +19,15 @@ public class Position implements Sendable {
     private int tableID;
     private int uid;
     private long time;
-    private int xPos;
-    private int yPos;
-    private int zPos;
+    private double xPos;
+    private double yPos;
+    private double zPos;
 
     public Position() {
         this(0, 0, 0, 0, 0);
     }
 
-    public Position(int uid, long time, int xPos, int yPos, int zPos) {
+    public Position(int uid, long time, double xPos, double yPos, double zPos) {
         this.uid = uid;
         this.time = time;
         this.xPos = xPos;
@@ -37,29 +37,29 @@ public class Position implements Sendable {
     }
 
     @Column(name = "X_POS", nullable = false)
-    public int getxPos() {
+    public double getxPos() {
         return xPos;
     }
 
-    public void setxPos(int xPos) {
+    public void setxPos(double xPos) {
         this.xPos = xPos;
     }
 
     @Column(name = "Y_POS", nullable = false)
-    public int getyPos() {
+    public double getyPos() {
         return yPos;
     }
 
-    public void setyPos(int yPos) {
+    public void setyPos(double yPos) {
         this.yPos = yPos;
     }
 
     @Column(name = "Z_POS", nullable = false)
-    public int getzPos() {
+    public double getzPos() {
         return zPos;
     }
 
-    public void setzPos(int zPos) {
+    public void setzPos(double zPos) {
         this.zPos = zPos;
     }
 
@@ -125,9 +125,9 @@ public class Position implements Sendable {
         int result = 11;
         result = 37 * result + uid;
         result = 37 * result + Long.valueOf(time).hashCode();
-        result = 37 * result + xPos;
-        result = 37 * result + yPos;
-        result = 37 * result + zPos;
+        result = (int) (37 * result + xPos);
+        result = (int) (37 * result + yPos);
+        result = (int) (37 * result + zPos);
         return result;
     }
 }

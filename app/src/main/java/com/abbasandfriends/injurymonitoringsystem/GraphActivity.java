@@ -57,7 +57,7 @@ public class GraphActivity extends android.app.Activity {
         {
             if (graphActivity.get(i) instanceof Acceleration) {
                 Acceleration a = (Acceleration) graphActivity.get(i);
-                float accel = a.getAccelMag();
+                float accel = (float)a.getAccelMag();
                 BarEntry v1e1 = new BarEntry(accel, i);
                 valueSet1.add(v1e1);
             }
