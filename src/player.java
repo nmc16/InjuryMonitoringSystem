@@ -1,6 +1,4 @@
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 
@@ -24,58 +22,177 @@ import com.pi4j.io.i2c.I2CBus;
 
 import java.util.Scanner;
 
-
+	
 
 /**
- * Player to send information to the controller/ data base 
- * @author charliehardwickkelly
+ * Player class to send information to the controller and data base
+ * takes in the raw voltages from the accelerometer through the adafruit 
+ * analog to digital converter. then sends data to the database by TCP connection 
  * 
+ * @author Charlie Hardwick-Kelly
  */
 public class player implements Producer {
 	
-	// holder variables for sensing function
-	private static String clientIP; 
-	private static int clientPort; 
-	
-	
-	
-	// here holder variables initialized 
-	private static double playerID; 
-	private static double Xcoord;
-	private static double Ycoord;
-	private static double Zcoord; 
-	
-	private static int uid=1; 
-	
-	// These variables are to send to the controller 
+	// Holder variables for sending function
+	private int clientPort;
+	private String clientIP;  
 	private Socket clientSocket;
 	private Gson gson = new Gson();	
-
-	private static Position position;
 	
-	private OutputStream outputStream;
+	// Holder variables for player functions
+	private int playerID; 
+	private double xcoord;
+	private double ycoord;
+	private double zcoord; 
 	
-	// create scanner 
-	private static Scanner in = new Scanner(System.in);
-	
-	private static boolean playing; 
-	
-	// create gpio controller
-	private static final GpioController gpio = GpioFactory.getInstance();
-	
-	
+	// constructor for the player class
 	public player(int playerID){
-		player.playerID=playerID; 
+		this.playerID=playerID; 
 	}
 	
+	//These are the getter methods necessary for player to function  
+	public Socket getClientSocket(){
+		return clientSocket;	
+	}
+	public int getPlayerID(){
+		return playerID;
+	}
+	public double getXcoord(){
+		return xcoord;
+	}
+	public double getYcoord(){
+		return ycoord;
+	}
+	public double getZcoord(){
+		return zcoord;
+	}
 	
-	public static void main(String args[]) throws InterruptedException, IOException {	
-		
-		setup();
+	public String getClientIP(){
+		return clientIP;	
+	}
+	public int getClientPort(){
+		return clientPort;	
+	}
 	
+	//These are the setter methods necessary for player to function  
+	public void setPlayerID(int playerID){
+		this.playerID = playerID;
+	}
+	public void setXcoord(double xcoord){
+		this.xcoord=xcoord;
+	}
+	public void setYcoord(double ycoord){
+		this.ycoord=ycoord;
+	}
+	public void setZcoord(double zcoord){
+		this.zcoord=zcoord;
+	}
+	public void setClientIP(String IP){
+		this.clientIP= IP;
+	}
+	public void setClientPort(int clientPort){
+		this.clientPort=clientPort;
+	}
+	public void setClientSocket(Socket clientSocket){	
+		this.clientSocket=clientSocket;
+	}
+	
+	 /**
+     * This method deals with the initial set up for a Player
+     * takes in a player and sets the playerID, clientIP and clientPort 
+     * according to the values taken in from the command line
+     * @version #2 
+     */
+	public void setup(player p) throws CommunicationException{
 		
+		Scanner in = new Scanner(System.in);
 		
+		// Take in the the player UID number 
+		System.out.println("please enter Player UID");
+		p.setPlayerID(in.nextInt());
+		System.out.println("the Players ID is: "+ p.getPlayerID());
+		
+		// Take in the location of the database / controller 
+		System.out.println("\n please enter the IP of the Data base 10.0.0.X "); 
+		p.setClientIP("10.0.0."+ in.next());
+		System.out.println("\n The IP of the client is:" +p.getClientIP());
+		
+		//Take in the port of the client 
+		System.out.println("\n please enter the clients port number ");
+		p.setClientPort(in.nextInt());
+		System.out.println("The clients port number is: " + p.getClientPort());
+		
+		//use the connect to method to set the socket 
+		 p.setClientSocket(connectTo(clientIP,clientPort));
+		
+		 in.close();
+	}
+
+	 /**
+     * @see Producer#disconnectFromClient(Socket)
+     */
+	@Override
+	public void disconnectFromClient(Socket clientSocket) throws CommunicationException {
+		try {
+            // Close the output stream, should also close socket
+            clientSocket.getOutputStream().close();
+
+            // If the socket was not closed then close it
+            if (!clientSocket.isClosed()) {
+                clientSocket.close();
+            }
+
+        } catch (IOException e) {
+            throw new CommunicationException("Could not close the client connection", e);
+        }
+	}
+
+	/**
+     * @see Producer#connectTo(String, int)
+     */
+	@Override
+	public Socket connectTo(String clientIP, int clientPort) throws CommunicationException {
+		
+		try {
+            // Open the client and save the output stream to write to
+			return new Socket(clientIP, clientPort);
+
+		} catch (IOException e) {
+			throw new CommunicationException("Could not set up client socket", e);
+		}
+	}
+
+	/**
+     * @see Producer#send(Sendable, Socket)
+     */
+    @Override
+	public void send(Sendable sendable, Socket client) throws CommunicationException {
+        // Check that there is a client to write to
+        if (client == null || client.isClosed()) {
+            throw new CommunicationException("Client socket not open to write to! Check that you have called" +
+                                             "connectTo() method.");
+        }
+
+        // Convert the object to its JSON representation
+		String msg = gson.toJson(sendable, sendable.getClass());
+		try {
+            // Convert to byte array and write to the socket
+			byte buffer[] = msg.getBytes();
+			client.getOutputStream().write(buffer);
+
+        } catch (IOException e) {
+            throw new CommunicationException("Could not write to client output buffer", e);
+		}
+	}
+
+    
+    public static void main(String args[]) throws InterruptedException, IOException, CommunicationException {	
+		// set up local variables to be used by main method
+		GpioController gpio = GpioFactory.getInstance();
+		player player = new player(1); 
+		player.setup(player);
 		System.out.println("starting the accelleromenter");
+		
 
 		// create custom ADS1015 GPIO provider
 	    final ADS1015GpioProvider gpioProvider = new ADS1015GpioProvider(I2CBus.BUS_1, ADS1015GpioProvider.ADS1015_ADDRESS_0x48);
@@ -115,56 +232,45 @@ public class player implements Producer {
 	    		// percentage
 	    		double percent =  ((value * 100) / ADS1015GpioProvider.ADS1015_RANGE_MAX_VALUE);
 	    		 
-	                
 	    		// approximate voltage ( *scaled based on PGA setting )
 	    		double voltage = gpioProvider.getProgrammableGainAmplifier(event.getPin()).getVoltage() * (percent/100);
 
-	    		// display output
-	    		
-	    		//System.out.print("\r (" + event.getPin().getName() +") : VOLTS=" + df.format(voltage) + "  | PERCENT=" + pdf.format(percent) + "% | RAW=" + value + "       ");
-	    		
+	    		// set the changed voltage according to the given named pin 
 	    		if(event.getPin().getName() == "X"){
-	    			 
-	    			Xcoord = voltage;
-	    			 
+	    			player.setXcoord(voltage);
 	    		}
 	    		if(event.getPin().getName() == "Y"){
-	    			 
-	    			Ycoord = voltage;
-	    			 
+	    			 player.setYcoord(voltage);	 
 	    		}
 	    		if(event.getPin().getName() == "Z"){
-	    			 
-	    			Zcoord = voltage;
-	    			 
+	    			 player.setZcoord(voltage); 
 	    		}  
-	    		 
 	    		
-	    		
-	    		// I use this code to create a position variable to send 
-	    		
+	    		// Create a position variable to send 
 	    		System.out.println("Made it past print");
-	    		position= new Position(uid,System.currentTimeMillis(),(int)Xcoord,(int)Ycoord,(int)Zcoord);
+	    		Position position = new Position(player.getPlayerID(),System.currentTimeMillis(),(int)player.getXcoord(),(int)player.getYcoord(),(int)player.getZcoord());
 	    		
+	    		// Attempt to send the position 
+	    		try {
+					player.send(position,player.getClientSocket());
+				} catch (CommunicationException e) {
+					System.out.println("Faild to send position");
+				}
+	    		// show a successfully sent position  
+	    		System.out.println("Position sent");
 	    		
-	    		
-	    		
-	    				
-	    		System.out.println(" the X value is " + Xcoord);
-	    		System.out.println(" the Y value is " + Ycoord);
-	    		System.out.println(" the Z value is " + Zcoord);
-	    	 
-	    	}
-
-			
+	    		// print out the x y and z positions to the command line
+	    		System.out.println(" the X value is " + player.getXcoord());
+	    		System.out.println(" the Y value is " + player.getYcoord());
+	    		System.out.println(" the Z value is " + player.getZcoord());
+	    	}			
 	    };
-	     
+	    // set the listeners to the specific pins
 	    myInputs[0].addListener(listener);
 	    myInputs[1].addListener(listener);
 	    myInputs[2].addListener(listener);
 	    myInputs[3].addListener(listener);
 	    
-	   
         // keep program running for 10 minutes 
         for (int count = 0; count < 600; count++) {
 
@@ -172,115 +278,10 @@ public class player implements Producer {
             Thread.sleep(1000);
         }
 	    
-	    shutdownGPIO();
-	        
-		
-		
-	}
-	
-	public static void setup(){
-		// Take in the the player UID number 
-		System.out.println("please enter Player UID");
-		playerID = in.nextInt();
-		
-		System.out.println("the Players ID is: "+ playerID);
-		
-		// Take in the location of the database / controller 
-		System.out.println("\n please enter the IP of the Data base 10.0.0.X "); 
-		clientIP="10.0.0."+ in.next();
-		System.out.println("\n The IP of the client is:" +clientIP );
-		
-		System.out.println("\n please enter the clients port number ");
-		clientPort = in.nextInt();
-		System.out.println("The clients port number is: ");
-		
-		//use connect to 
-	
-		
-		
-		
-	}
-	 
-	public static void shutdownGPIO(){
-		
+	   
+	    // shutdown the GPIO after 10 minutes    
 		gpio.shutdown();
         System.out.print("");
-        System.out.print("");
-		
-		
+        System.out.print("");		
 	}
-	
-	
-	
-
-	
-	
-	
-	// nics code for sending data between devices 
-	
-	
-
-    
-	 /**
-     * @see Producer#disconnectFromClient(Socket)
-     */
-	@Override
-	public void disconnectFromClient(Socket clientSocket) throws CommunicationException {
-		try {
-            // Close the output stream, should also close socket
-            clientSocket.getOutputStream().close();
-
-            // If the socket was not closed then close it
-            if (!clientSocket.isClosed()) {
-                clientSocket.close();
-            }
-
-        } catch (IOException e) {
-            throw new CommunicationException("Could not close the client connection", e);
-        }
-	}
-
-	/**
-     * @see Producer#connectTo(String, int)
-     */
-	@Override
-	public Socket connectTo(String clientIP, int clientPort) throws CommunicationException {
-		
-		try {
-            // Open the client and save the output stream to write to
-			return new Socket(clientIP, clientPort);
-
-		} catch (IOException e) {
-			throw new CommunicationException("Could not set up client socket", e);
-		}
-	}
-
-
-
-	/**
-     * @see Producer#send(Sendable, Socket)
-     */
-    @Override
-	public void send(Sendable sendable, Socket client) throws CommunicationException {
-        // Check that there is a client to write to
-        if (client == null || client.isClosed()) {
-            throw new CommunicationException("Client socket not open to write to! Check that you have called" +
-                                             "connectTo() method.");
-        }
-
-        // Convert the object to its JSON representation
-		String msg = gson.toJson(sendable, sendable.getClass());
-		try {
-            // Convert to byte array and write to the socket
-			byte buffer[] = msg.getBytes();
-			client.getOutputStream().write(buffer);
-
-        } catch (IOException e) {
-            throw new CommunicationException("Could not write to client output buffer", e);
-		}
-	}
-
-
-	
-	
 }
