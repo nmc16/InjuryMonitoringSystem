@@ -53,13 +53,13 @@ public class Controller implements Producer, Consumer {
      */
     public Acceleration calculate(Position p1, Position p2) throws ThresholdException {
         // Calculate the acceleration sendable
-        int deltaX = p2.getxPos() - p1.getxPos();
-        int deltaY = p2.getyPos() - p1.getyPos();
-        int deltaZ = p2.getzPos() - p1.getzPos();
+    	double deltaX = p2.getxPos() - p1.getxPos();
+    	double deltaY = p2.getyPos() - p1.getyPos();
+    	double deltaZ = p2.getzPos() - p1.getzPos();
 
-        int xAccel = (int) (deltaX / ((p2.getTime() - p1.getTime()) / 1000.0));
-        int yAccel = (int) (deltaY / ((p2.getTime() - p1.getTime()) / 1000.0));
-        int zAccel = (int) (deltaZ / ((p2.getTime() - p1.getTime()) / 1000.0));
+    	double xAccel = deltaX / ((p2.getTime() - p1.getTime()) / 1000.0);
+    	double yAccel = deltaY / ((p2.getTime() - p1.getTime()) / 1000.0);
+    	double zAccel = deltaZ / ((p2.getTime() - p1.getTime()) / 1000.0);
 
         double accel = sqrt(pow(deltaX, 2) + pow(deltaY, 2) + pow(deltaZ, 2));
 
