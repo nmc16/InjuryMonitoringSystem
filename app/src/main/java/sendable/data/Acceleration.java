@@ -5,6 +5,7 @@ import sendable.Sendable;
 
 import javax.persistence.*;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 /**
@@ -151,7 +152,7 @@ public class Acceleration implements Sendable {
 
     @Override
     public String toString() {
-        return "Accel: X = " + xAccel + ", Y = " + yAccel + ", Z = " + zAccel + "Magnitude = " +
-                accelMag;
+        return "X=" + DoubleFormatter.format(xAccel) + ", Y=" + DoubleFormatter.format(yAccel) +
+               ", Z=" + DoubleFormatter.format(zAccel) + ", M=" + DoubleFormatter.format(accelMag);
     }
 }

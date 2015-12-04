@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.abbasandfriends.injurymonitoringsystem.R;
+import com.abbasandfriends.injurymonitoringsystem.async.AsyncListener;
 
 /**
  * Creates a dialog box that has multiple input fields to create
@@ -22,10 +23,12 @@ import com.abbasandfriends.injurymonitoringsystem.R;
 public class RequestDialog {
     private AlertDialog.Builder builder;
     private Activity activity;
+    private AsyncListener listener;
 
-    public RequestDialog(Activity activity) {
+    public RequestDialog(Activity activity, AsyncListener listener) {
         builder = new AlertDialog.Builder(activity);
         this.activity = activity;
+        this.listener = listener;
     }
 
     /**
@@ -87,7 +90,8 @@ public class RequestDialog {
 
         // Change the listener to one that does not close right away
         Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        button.setOnClickListener(new RequestClickListener(dialog, startTime, endTime, player, s, activity));
+        button.setOnClickListener(new RequestClickListener(dialog, startTime, endTime, player, s,
+                                  activity, listener));
 
         return dialog;
     }

@@ -60,4 +60,9 @@ public class TrainerCause extends Cause {
         result = 37 * result + (priority != null ? priority.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Priority " + priority.toString() + " for player";
+    }
 }

@@ -16,6 +16,15 @@ import controller.Controller;
 import exception.CommunicationException;
 import sendable.data.Initialization;
 
+/**
+ * Asynchronous connection setup for the {@link ConnectionHandler} connection
+ * to the database.
+ *
+ * Connects the host connection first to the database, then creates a client
+ * connection for requests.
+ *
+ * Add the connection handler to the {@link ContextHandler}
+ */
 public class AsyncConnectionSetup extends AsyncTask<String, Void, Boolean> {
     private static final String LOG_TAG = "AsyncConnectionSetup";
 

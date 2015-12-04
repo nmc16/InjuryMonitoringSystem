@@ -108,4 +108,9 @@ public class Alarm implements Sendable {
         result = 37 * result + (cause != null ? cause.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return cause.toString();
+    }
 }

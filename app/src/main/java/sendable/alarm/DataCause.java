@@ -61,4 +61,9 @@ public class DataCause extends Cause {
         result = 37 * result + threshold;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Data crossed " + threshold + " theshold";
+    }
 }

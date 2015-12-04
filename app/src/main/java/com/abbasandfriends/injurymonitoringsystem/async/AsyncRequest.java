@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.abbasandfriends.injurymonitoringsystem.ContextHandler;
-import com.abbasandfriends.injurymonitoringsystem.MainAppActivity;
 import com.abbasandfriends.injurymonitoringsystem.connection.ConnectionHandler;
 
 import java.net.Socket;
@@ -16,11 +15,28 @@ import sendable.Sendable;
 import sendable.data.Request;
 import sendable.data.Service;
 
-public class AsyncRequest extends AsyncTask<Request, Void, List<Sendable>> {
+/**
+ * Class to handle asynchronous requests to the database for data.
+ *
+ * The parameters must be ordered specifically:
+ *      param[0]: the request object created to send to the database
+ *      param[1]: the AsyncListener implementation to call addData on
+ */
+public class AsyncRequest extends AsyncTask<Object, Void, List<Sendable>> {
     private static final String LOG_TAG = "AsyncRequest";
+    private AsyncListener listener;
 
     @Override
-    protected List<Sendable> doInBackground(Request... params) {
+    protected List<Sendable> doInBackground(Object... params) {
+        // Check that the parameters passed are correct
+        if (params.length < 2 || !(params[0] instanceof Request) ||
+                                 !(params[1] instanceof AsyncListener)) {
+            Log.e(LOG_TAG, "Parameters passed were not correct!");
+            return null;
+        }
+
+        listener = (AsyncListener) params[1];
+
         Log.d(LOG_TAG, "Started...");
         // Attempt to get the connection from context
         Object o = ContextHandler.get(ContextHandler.HANDLER);
@@ -36,9 +52,10 @@ public class AsyncRequest extends AsyncTask<Request, Void, List<Sendable>> {
             // Get the request socket and read it for data
             ConnectionHandler connectionHandler = (ConnectionHandler) o;
             Socket s = connectionHandler.getDataBaseRequest();
+            Request request = (Request) params[0];
 
-            Log.d(LOG_TAG, "Sending request: " + params[0].getRequestType());
-            connectionHandler.send(params[0], s);
+            Log.d(LOG_TAG, "Sending request: " + request.getRequestType());
+            connectionHandler.send(request, s);
             Log.d(LOG_TAG, "Request sent to database");
 
             Log.d(LOG_TAG, "Waiting for data...");
@@ -70,7 +87,7 @@ public class AsyncRequest extends AsyncTask<Request, Void, List<Sendable>> {
         for (Object o : received) {
             if (o instanceof Sendable) {
                 Sendable s = (Sendable) o;
-                MainAppActivity.addData(s);
+                listener.addData(s);
             }
         }
     }
