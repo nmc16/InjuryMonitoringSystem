@@ -28,9 +28,12 @@ public class GraphActivity extends android.app.Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
-
-        //graphActivity = MainAppActivity.data;
         graphActivity = null;
+
+        if(MainAppActivity.data != null){
+            graphActivity = MainAppActivity.data;
+        }
+
         if (graphActivity != null) {
             BarChart chart = (BarChart) findViewById(R.id.chart);
 
