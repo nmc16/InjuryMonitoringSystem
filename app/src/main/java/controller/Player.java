@@ -188,7 +188,7 @@ public class Player implements Producer {
     public static void main(String args[]) throws InterruptedException, IOException, CommunicationException {	
 		// set up local variables to be used by main method
 		GpioController gpio = GpioFactory.getInstance();
-		Player player = new Player(1); 
+		final Player player = new Player(1);
 		player.setup(player);
 		LOG.info("starting the accelleromenter");
 		

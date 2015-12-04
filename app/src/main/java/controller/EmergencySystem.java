@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import com.pi4j.component.light.LED;
 import com.pi4j.component.switches.SwitchListener;
 import com.pi4j.component.switches.SwitchState;
 import com.pi4j.component.switches.SwitchStateChangeEvent;
@@ -131,7 +130,7 @@ public class EmergencySystem implements Consumer {
     }
 
 	/**
-     * @see Consumer#receive(InputStream)
+     * @see Consumer#receive(Socket)
      */
 	@Override
 	public List<Sendable> receive(Socket clientSocket) throws CommunicationException {
