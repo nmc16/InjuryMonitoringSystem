@@ -245,7 +245,6 @@ public class Player implements Producer {
 	    		}  
 	    		
 	    		// Create a position variable to send 
-	    		LOG.info("Made it past print");
 	    		Position position = new Position(player.getPlayerID(),System.currentTimeMillis(),(int)player.getXcoord(),(int)player.getYcoord(),(int)player.getZcoord());
 	   		
 	    		// Attempt to send the position 
@@ -254,9 +253,6 @@ public class Player implements Producer {
 				} catch (CommunicationException e) {
 					LOG.info("Faild to send position");
 				}
-	    		// show a successfully sent position  
-	    		LOG.info("Position sent");
-	    		
 	    		// print out the x y and z positions to the command line
 	    		LOG.info("The X value is: " + player.getXcoord());
 	    		LOG.info("The Y value is: " + player.getYcoord());
