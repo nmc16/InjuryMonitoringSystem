@@ -2,25 +2,25 @@ package com.abbasandfriends.injurymonitoringsystem;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.app.Activity;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import sendable.data.Acceleration;
-import sendable.data.Position;
-import sendable.DataType;
-import sendable.Sendable;
-import sendable.data.Service;
 
+import sendable.data.Acceleration;
+import sendable.Sendable;
+
+/**
+ * Creates a Graph of acceleration magnitudes received from
+ * the player.
+ * Passed a <Sendable> list of data from MainAppActivity, iterates the list to
+ * create a chart of Time vs Acceleration Magnitude.
+ */
 public class GraphActivity extends android.app.Activity {
     List<Sendable> graphActivity;
 
@@ -48,7 +48,10 @@ public class GraphActivity extends android.app.Activity {
         }
 
     }
-
+    /**
+     * Returns an ArrayList for the magnitude of accelerations received from database.
+     * Used as y axis values for graph.
+     */
     private ArrayList<BarDataSet> getDataSet() {
         ArrayList<BarDataSet> dataSets = null;
         ArrayList<BarEntry> valueSet1 = new ArrayList<>();
@@ -62,21 +65,29 @@ public class GraphActivity extends android.app.Activity {
                 valueSet1.add(v1e1);
             }
         }
-        //BarEntry v1e1 = new BarEntry(30.000f, 0);
-        //valueSet1.add(v1e1);
-
         BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Change in Acceleration");
+
+        //Default color so the graph won't crash
         barDataSet1.setColor(Color.rgb(155, 0, 0));
-        //BarDataSet barDataSet2 = new BarDataSet(valueSet2, "Brand 2");
-        //barDataSet2.setColors(ColorTemplate.COLORFUL_COLORS);
+
+
+        //Changes the colour of the graph according to the player
+        for (int i = 0; i < graphActivity.size(); i++){
+            int colorRatio = graphActivity.get(i).getUID()*graphActivity.get(i).getUID();
+            barDataSet1.setColor(Color.rgb(255/colorRatio, 0, 2*colorRatio));
+        }
 
         dataSets = new ArrayList<>();
         dataSets.add(barDataSet1);
-        //dataSets.add(barDataSet2);
+
         return dataSets;
 
-    }
 
+    }
+    /**
+     * Creates an ArrayList of the dates with relation to the Acceleration graphed.
+     * Used as the x axis values.
+     */
     private ArrayList<String> getXAxisValues() {
         ArrayList<String> xAxis = new ArrayList<>();
 
