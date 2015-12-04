@@ -41,7 +41,7 @@ public class Position implements Sendable {
         return xPos;
     }
 
-    public void setxPos(int xPos) {
+    public void setxPos(double xPos) {
         this.xPos = xPos;
     }
 
@@ -50,7 +50,7 @@ public class Position implements Sendable {
         return yPos;
     }
 
-    public void setyPos(int yPos) {
+    public void setyPos(double yPos) {
         this.yPos = yPos;
     }
 
@@ -59,7 +59,7 @@ public class Position implements Sendable {
         return zPos;
     }
 
-    public void setzPos(int zPos) {
+    public void setzPos(double zPos) {
         this.zPos = zPos;
     }
 

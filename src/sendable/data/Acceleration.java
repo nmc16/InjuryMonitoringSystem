@@ -48,7 +48,7 @@ public class Acceleration implements Sendable {
         return xAccel;
     }
 
-    public void setxAccel(int xAccel) {
+    public void setxAccel(double xAccel) {
         this.xAccel = xAccel;
     }
 
@@ -57,7 +57,7 @@ public class Acceleration implements Sendable {
         return yAccel;
     }
 
-    public void setyAccel(int yAccel) {
+    public void setyAccel(double yAccel) {
         this.yAccel = yAccel;
     }
 
@@ -66,7 +66,7 @@ public class Acceleration implements Sendable {
         return zAccel;
     }
 
-    public void setzAccel(int zAccel) {
+    public void setzAccel(double zAccel) {
         this.zAccel = zAccel;
     }
 
@@ -75,7 +75,7 @@ public class Acceleration implements Sendable {
         return accelMag;
     }
 
-    public void setAccelMag(int accelMag) {
+    public void setAccelMag(double accelMag) {
         this.accelMag = accelMag;
     }
 
