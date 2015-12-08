@@ -199,7 +199,10 @@ public class MainAppActivity extends Activity implements AdapterView.OnItemSelec
     public void onNothingSelected(AdapterView<?> parent) {
         Toast.makeText(this, "Nothing Selected", Toast.LENGTH_SHORT).show();
     }
-
+    
+    /*
+    * Assigns data to a scrollable listview on the MainAppActivity
+    */
     public void addData(Sendable sendable) {
         // Add to the data
         data.add(sendable);
