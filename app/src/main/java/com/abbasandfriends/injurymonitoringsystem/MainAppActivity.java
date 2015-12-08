@@ -46,7 +46,7 @@ import sendable.alarm.Cause;
  * Creates all buttons and a dropdown spinner for use on the Main activity and
  * creates listeners for the buttons to activate secondary activities when pressed.
  *
- * @version 2
+ * @version 3
  */
 public class MainAppActivity extends Activity implements AdapterView.OnItemSelectedListener, AsyncListener {
     public static final String HOST_IP = "hostip";
