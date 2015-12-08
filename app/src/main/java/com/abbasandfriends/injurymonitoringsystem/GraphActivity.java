@@ -20,6 +20,7 @@ import sendable.Sendable;
  * the player.
  * Passed a <Sendable> list of data from MainAppActivity, iterates the list to
  * create a chart of Time vs Acceleration Magnitude.
+ * Uses an Open Source library to create the graphs - MPAndroidChart
  */
 public class GraphActivity extends android.app.Activity {
     List<Sendable> graphActivity;
