@@ -1,1 +1,61 @@
-# InjuryMonitoringSystem
+*************************************************************
+* Authors: Abbas Zahed, Charlie Hardwick-Kelly,             *
+*          Luke Sanderson , Nicolas McCallum                *
+*    Date: December 7 2015                                  * 
+* Version: 1                                                *
+*                                                           *
+*                Sysc 3010 term Project                     *
+*************************************************************
+This is the explanation on how to properly run the Injury Monitoring System (IMS). 
+
+The IMS has been designed to help the medical staff of a sporting team determine if 
+a player has received an impact to the head great enough to cause a concussion. 
+
+The System consist of four components, a sensor for taking in acceleration data, 
+a data base of the player acceleration information,  an Emergency System representing 
+medical staff and an app for use by the teams trainer.  
+
+When the sensor and database detect a possible emergency an alarm is triggered on the trainer’s 
+android device. The trainer can then lookup previous player information from the database using 
+the app to determine whether or not emergency medical staff need to be notified. 
+
+If he determines that they are needed, a notification is sent to the emergency system 
+to signal that they are needed.
+
+To run the code: 
+1: Clone the code from GitHub on all 4 devices:
+	$ git clone https://github.com/nmc16/InjuryMonitoringSystem.git
+	
+2: Move into the run folder on all devices:
+	$ cd InjuryMonitoringSytem/run
+	
+3: Run the setup file to create the dependencies: 
+	$ ./setup.sh
+	
+4: Run the compiler:
+	$ ./run.sh –c
+	
+   OR Point to the files directly using javac:
+	$ javac -d ../target –cp ../dependencies/*:../src/*: ../src/**/*.java
+	
+5. Move into the target folder on all devices:
+	$ cd ../target
+	
+6: Start the Database on one of the 4 devices where the variables are substituted with values: 
+	$ ./run.sh –r controller.ControllerRunner THRESHOLD_VALUE HOST_PORT HOST_IP EMERGENCY_STATION_IP EMERGENCY_STATION_PORT
+	OR
+	$ java -cp dependencies/*:./*: controller.ContollerRunner THRESHOLD_VALUE HOST_PORT HOST_IP EMERGENCY_STATION_IP EMERGENCY_STATION_PORT
+	
+7. Start the EmergencySystem and enter the relevant information to connect to database and port:
+	$ ./run.sh –r controller.EmergencySystem
+	OR
+	$ java -cp dependencies/*:./*: controller.EmergencySystem
+
+8: Start the app:
+	Hit connections button and input the IP address and port of the database 
+
+9. Start the player and enter the relevant information to connect to database and port:
+	$ ./run.sh –r controller.Player
+	OR
+	$ java -cp dependencies/*:./*: controller.Player
+	
